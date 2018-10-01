@@ -27,8 +27,8 @@ import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.RuleMatchFilter;
 import org.languagetool.rules.RuleWithMaxFilter;
 import org.languagetool.tools.StringTools;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,15 +39,15 @@ import java.util.List;
  * Matches a pattern rule against text.
  */
 final class PatternRuleMatcher extends AbstractPatternRulePerformer implements RuleMatcher {
+  public static Integer slowMatchThreshold = null;
 
-  //private static final Logger logger = LoggerFactory.getLogger(PatternRuleMatcher.class);
+  private static final Logger logger = LoggerFactory.getLogger(PatternRuleMatcher.class);
   private static final String SUGGESTION_START_TAG = "<suggestion>";
   private static final String SUGGESTION_END_TAG = "</suggestion>";
   private static final String MISTAKE = "<mistake/>";
 
   private final boolean useList;
   private final List<PatternTokenMatcher> patternTokenMatchers;
-  //private final Integer slowMatchThreshold;
 
   PatternRuleMatcher(PatternRule rule, boolean useList) {
     super(rule, rule.getLanguage().getUnifier());
@@ -152,12 +152,13 @@ final class PatternRuleMatcher extends AbstractPatternRulePerformer implements R
     }
     RuleMatchFilter maxFilter = new RuleWithMaxFilter();
     List<RuleMatch> filteredMatches = maxFilter.filter(ruleMatches);
-    /*if (slowMatchThreshold != null) {
+    // TODO DEBUGGING ONLY
+    if (slowMatchThreshold != null) {
       long runTime = System.currentTimeMillis() - startTime;
       if (runTime > slowMatchThreshold) {
         logger.warn("Slow match for rule " + rule.getFullId() + ": " + runTime + "ms, sentence len: " + sentence.getText().length() + " (threshold: " + slowMatchThreshold + "ms)");
       }
-    }*/
+    }
     return filteredMatches.toArray(new RuleMatch[filteredMatches.size()]);
   }
 

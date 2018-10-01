@@ -40,7 +40,7 @@ final class PerformanceTest {
   private void run(JLanguageTool lt, File textFile) throws IOException {
     String text = StringTools.readStream(new FileInputStream(textFile), "utf-8");
     int sentenceCount = lt.sentenceTokenize(text).size();
-    lt.activateLanguageModelRules(new File("data/ngrams"));
+    lt.activateLanguageModelRules(new File("ngrams"));
     //lt.activateLanguageModelRules(new File("/home/dnaber/data/google-ngram-index"));
     System.out.println("Language: " +  lt.getLanguage() +
                        ", Text length: " + text.length() + " chars, " + sentenceCount + " sentences");
@@ -50,10 +50,12 @@ final class PerformanceTest {
     lt.check(text);
     long runTime1 = System.currentTimeMillis() - startTime1;
     float timePerSentence1 = (float)runTime1 / sentenceCount;
-    System.out.printf("Check time on first run: " + runTime1 + "ms = %.1fms per sentence\n", timePerSentence1);
+    //System.out.printf("Check time on first run: " + runTime1 + "ms = %.1fms per sentence\n", timePerSentence1);
 
     System.out.println("Checking text...");
-    float totalTime = 0;
+    PatternRuleMatcher.slowMatchThreshold = 2;
+    lt.check("For decades, surgeons have been able to reliably and reliably remove the largest saphenous vein, either through a single long leg section or through several small incision.");
+/*    float totalTime = 0;
     for (int i = 0; i < RUNS; i++) {
       long startTime2 = System.currentTimeMillis();
       lt.check(text);
@@ -64,7 +66,7 @@ final class PerformanceTest {
       totalTime += timePerSentence2;
     }
     float avg = totalTime / (float)RUNS;
-    System.out.printf("Average time per sentence = %.1fms\n", avg);
+    System.out.printf("Average time per sentence = %.1fms\n", avg);*/
   }
 
   public static void main(String[] args) throws IOException {
