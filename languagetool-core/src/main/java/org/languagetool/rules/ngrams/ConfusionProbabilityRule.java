@@ -51,8 +51,13 @@ public abstract class ConfusionProbabilityRule extends Rule {
   // probability is only used then at least these many of the occurrence lookups succeeded, 
   // i.e. returned a value > 0:
   public static final float MIN_COVERAGE = 0.5f;
+
+  public double getMinProb() {
+    return MIN_PROB;
+  }
+
   // the minimum value the more probable variant needs to have to be considered:
-  private static final double MIN_PROB = 0.0;  // try values > 0 to avoid false alarms
+  protected static final double MIN_PROB = 0.0;  // try values > 0 to avoid false alarms
 
   private static final boolean DEBUG = false;
 
@@ -70,7 +75,7 @@ public abstract class ConfusionProbabilityRule extends Rule {
         }
       });
 
-  private final Map<String,List<ConfusionSet>> wordToSets = new HashMap<>();
+  protected final Map<String,List<ConfusionSet>> wordToSets = new HashMap<>();
   private final LanguageModel lm;
   private final int grams;
   private final Language language;
@@ -131,7 +136,7 @@ public abstract class ConfusionProbabilityRule extends Rule {
             Set<ConfusionString> set = uppercase ? confusionSet.getUppercaseFirstCharSet() : confusionSet.getSet();
             ConfusionString betterAlternative = getBetterAlternativeOrNull(tokens.get(pos), tokens, set, confusionSet.getFactor());
             if (betterAlternative != null && !isException(text)) {
-              ConfusionString stringFromText = getConfusionString(set, tokens.get(pos));
+              ConfusionString stringFromText = getConfusionString(set, tokens.get(pos).token);
               String message = getMessage(stringFromText, betterAlternative);
               RuleMatch match = new RuleMatch(this, sentence, googleToken.startPos, googleToken.endPos, message);
               match.setSuggestedReplacement(betterAlternative.getString());
@@ -165,7 +170,7 @@ public abstract class ConfusionProbabilityRule extends Rule {
     return language.getWordTokenizer();
   }
 
-  private String getMessage(ConfusionString textString, ConfusionString suggestion) {
+  protected String getMessage(ConfusionString textString, ConfusionString suggestion) {
     if (textString.getDescription() != null && suggestion.getDescription() != null) {
       return Tools.i18n(messages, "statistics_suggest1", suggestion.getString(), suggestion.getDescription(), textString.getString(), textString.getDescription());
     } else if (suggestion.getDescription() != null) {
@@ -209,9 +214,9 @@ public abstract class ConfusionProbabilityRule extends Rule {
     throw new RuntimeException("No alternative found for: " + token);
   }
 
-  private ConfusionString getConfusionString(Set<ConfusionString> confusionSet, GoogleToken token) {
+  protected ConfusionString getConfusionString(Set<ConfusionString> confusionSet, String token) {
     for (ConfusionString s : confusionSet) {
-      if (s.getString().equalsIgnoreCase(token.token)) {
+      if (s.getString().equalsIgnoreCase(token)) {
         return s;
       }
     }
@@ -335,5 +340,27 @@ public abstract class ConfusionProbabilityRule extends Rule {
       System.out.printf(Locale.ENGLISH, message, vars);
     }
   }
-  
+
+  public List<Double> evaluateConfusionPair(AnalyzedSentence sentence, String sentenceToken, String alternative) {
+    String text = sentence.getText();
+    List<GoogleToken> tokens = GoogleToken.getGoogleTokens(text, true, getGoogleStyleWordTokenizer());
+    Optional<GoogleToken> token = tokens.stream().filter(t -> t.token.equals(sentenceToken)).findFirst();
+    if (!token.isPresent()) {
+      return null;
+    }
+    double p1, p2;
+    if (grams == 3) {
+      p1 = get3gramProbabilityFor(token.get(), tokens, sentenceToken);
+      p2 = get3gramProbabilityFor(token.get(), tokens, alternative);
+    } else if (grams == 4) {
+      p1 = get4gramProbabilityFor(token.get(), tokens, sentenceToken);
+      p2 = get4gramProbabilityFor(token.get(), tokens, alternative);
+    } else {
+      throw new RuntimeException("Only 3grams and 4grams are supported");
+    }
+    //return Arrays.asList(p1 == 0.0 ? 0.0 : Math.log10(p1), p2 == 0.0 ? 0.0 : Math.log10(p2));
+    double p1Log = p1 == 0.0 ? 0.0 : Math.log10(p1), p2Log = p2 == 0.0 ? 0.0 : Math.log10(p2);
+    return Arrays.asList(p1Log, p2Log, p1Log - p2Log);
+    //return Pair.of(p1, p2);
+  }
 }

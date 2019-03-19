@@ -1,0 +1,46 @@
+syntax = "proto3";
+package ml_utils;
+option java_package = "org.languagetool.tools.ml";
+option java_outer_classname = "MachineLearningUtilsProto";
+
+service LogisticRegression {
+    rpc Train (Dataset) returns (RegressionModel);
+}
+
+service Utils {
+    rpc ComputePRCurve (Predictions) returns (PRCurve);
+}
+
+message Predictions {
+    repeated double prediction = 1;
+    repeated bool target = 2;
+}
+
+message PRCurve {
+    repeated Threshold thresholds = 1;
+}
+
+message Threshold {
+    double threshold = 1;
+    double precision = 2;
+    double recall = 3;
+}
+
+message Datapoint {
+    repeated double x = 1;
+    bool y = 2;// false = negative class, true = positive class
+}
+
+message Dataset {
+    repeated Datapoint samples = 1;
+    uint32 num_features = 2;
+}
+
+message RegressionModel {
+    // parameters of trained model
+    repeated double coef = 1;
+    double intercept = 2;
+    // parameters of standard scaling applied to data
+    repeated double mean = 3;
+    repeated double var = 4;
+}

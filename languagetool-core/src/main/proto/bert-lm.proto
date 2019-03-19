@@ -1,0 +1,37 @@
+syntax = "proto3";
+package bert;
+option java_package = "org.languagetool.languagemodel.bert.grpc";
+option java_outer_classname = "BertLmProto";
+
+
+service BertLm {
+    rpc Lookup (LookupRequest) returns (BertLmResponse);
+    rpc Predict (PredictionRequest) returns (BertLmResponse);
+}
+
+message Mask {
+    uint32 sentence_index = 1;
+    uint32 word_index = 2;
+}
+
+message Prediction {
+    string word = 1;
+    double probability = 2;
+}
+
+message LookupRequest {
+    repeated string sentences = 1;
+    Mask mask = 2;
+    repeated string candidates = 3;
+}
+
+message PredictionRequest {
+    repeated string sentences = 1;
+    Mask mask = 2;
+    uint32 limit = 3;
+}
+
+message BertLmResponse {
+    repeated Prediction result = 1;
+}
+
