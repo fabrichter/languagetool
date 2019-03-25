@@ -26,6 +26,7 @@ import org.languagetool.chunking.Chunker;
 import org.languagetool.chunking.GermanChunker;
 import org.languagetool.languagemodel.LanguageModel;
 import org.languagetool.languagemodel.LuceneLanguageModel;
+import org.languagetool.rules.bert.BertConfusionProbabilityRule;
 import org.languagetool.rules.de.LongSentenceRule;
 import org.languagetool.rules.de.SentenceWhitespaceRule;
 import org.languagetool.rules.*;
@@ -256,7 +257,9 @@ public class German extends Language implements AutoCloseable {
   @Override
   public List<Rule> getRelevantLanguageModelRules(ResourceBundle messages, LanguageModel languageModel) throws IOException {
     return Arrays.asList(
-            new GermanConfusionProbabilityRule(messages, languageModel, this),
+            // TODO temporary test
+            //new GermanConfusionProbabilityRule(messages, languageModel, this),
+            new BertConfusionProbabilityRule(messages, this, languageModel, "127.0.0.1", 50051),
             new ProhibitedCompoundRule(messages, languageModel)
     );
   }

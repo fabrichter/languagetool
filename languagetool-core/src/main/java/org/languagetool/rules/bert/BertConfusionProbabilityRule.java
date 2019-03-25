@@ -78,7 +78,9 @@ public class BertConfusionProbabilityRule extends ConfusionProbabilityRule {
 
   @Override
   public List<Double> evaluateConfusionPair(AnalyzedSentence sentence, String textToken, String alternative) {
-    List<Double> features = super.evaluateConfusionPair(sentence, textToken, alternative);
+    List<Double> features = null;
+    // enable next line to combine ngram and BERT features
+    // features = super.evaluateConfusionPair(sentence, textToken, alternative);
     if (features == null) {
       return null;
     } else {

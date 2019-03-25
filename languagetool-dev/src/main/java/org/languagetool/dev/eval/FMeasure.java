@@ -40,4 +40,9 @@ public final class FMeasure {
     return (1 + betaSquared) * (precision * recall) / ((betaSquared * precision) + recall);
   }
 
+  public static double getFMeasure(double precision, double recall, double beta) {
+    double betaSquared = Math.pow(beta, 2);
+    return (1 + betaSquared) * (precision * recall) / ((betaSquared * precision) + recall);
+  }
+
 }

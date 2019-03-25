@@ -1,0 +1,130 @@
+# German confusion sets
+# Line format: see en/confusion_sets.txt
+ach; auch
+als; also
+auch; such
+De; Die
+dich; doch
+dich|Akkusativ; dir|Dativ
+drei; frei
+ehelich|auf die Ehe bezogen; ehrlich
+fielen|zu 'fallen'; vielen
+fiele|zu 'fallen'; viele
+fiel|zu 'fallen'; viel
+Gebäck; Gepäck
+Gerten|Plural von 'Gerte'; Gärten|Plural von 'Garten'
+gesellt|zu 'gesellen', sich jemandem anschließen; gestellt|zu 'stellen'
+gewichtet; gewuchtet
+Hefe; Hefte
+heute; häute
+ihm; im
+im; um
+klingt|zu 'klingen' (Geräusch); klinkt|zu 'ein/ausklinken'
+Laib|Laib Brot oder Käse; Leib|Körper
+Laie; Leihe
+least; liest
+Leere|Nichts; Lehre|Ausbildung
+legen; lägen|Konjunktiv von 'liegen'
+Lid|Augenlid; Lied|Musikstück
+Maar|Mulde vulkanischen Ursprungs; Mahr
+Mahl|Speise; Mal|Hautfleck
+Mark; Markt
+Mathe; Matte
+Mediation|Verfahren zur Konfliktlösung; Meditation|spirituelle Übung
+mich|Akkusativ; mir|Dativ
+Miene|Gesichtsausdruck; Mine|Bergwerk/Schreibgerät
+mir; mit
+Motte; Motto
+Nachnahme|Versandart; Nachname|Familienname
+oll; soll
+Patenten; Patienten
+Rede|Ansprache; Reede|Ankerplatz
+Reinfall|Flop; Rheinfall|Wasserfall
+Rezension|Buch-/Film-/Produktkritik; Rezession|Konjunkturrückgang
+Route|Strecke; Rute|dünner Zweig
+Ruhm|hohe Anerkennung; Rum|alkoholisches Getränk
+scherzhaft; schmerzhaft
+Sand; Stand
+sehr; seht
+seht; sieht
+sich; such
+Siegel|Stempel; Sigel|Zeichen (Fachsprache)
+Sohle|Schuhe/Bergbau; Sole|wässrige Salzlösung
+späht|Form von 'spähen'; spät
+#staatlichem; stattlichem
+staatlichen; stattlichen
+staatlicher; stattlicher
+staatliches; stattliches
+staatliche; stattliche
+staatlich; stattlich
+Stand; Strand
+Stelle|Ort; Ställe|Plural von 'Stall'
+Stele|hoher, freistehender Pfeiler; Stelle|Ort
+Stich; Strich
+Stiel|Stängel; Stil|Art und Weise
+strickt|Form von 'stricken'; strikt|streng
+Uhrzeit|Zeit auf der Uhr; Urzeit|Vorzeit
+und; uns
+vage|ungenau; wage|Form von 'wagen'
+Vasen|Plural von 'Vase'; Wasen|Name
+verwaist|verlassen; verweist|hinweisen
+Villen|Plural von 'Villa''; Willen|Wollen
+Waagen|Plural von 'Waage'; Wagen|Auto
+Waise|elternloses Kind; Weise|Art und Weise
+war; was
+ward|literarisch für 'wurde'; wart|Vergangenheit von 'sein'
+waren; warnen
+weiht|Form von 'weihen'; weit|breit, lang
+weist|Form von '(hin)weisen'; weißt|Form von 'weißen' (weiß streichen)
+Welle|Wasserwoge; Wälle|Plural von 'Wall'
+wer; wär
+wie; wir
+wir; wird
+Würste; Wüste
+Zeilen; Zielen
+Zeile; Ziele
+Zunahme|das Zunehmen; Zuname|Nachname
+#aus; auf
+#angeschlossen; angeschossen
+#biss|beißen; bis|von ... bis ...
+#braten; beraten
+#das; dass
+#den; denn
+#denen; dehnen
+#de; die
+#die; sie
+#fasst; fast
+#feiern; feuern
+#Ferse;Verse
+#Finder; Finger
+#Finte; Flinte
+#furchtbar; fruchtbar
+#gefeiert; gefeuert
+#Gesten; Gestern
+#gewaschen; gewachsen
+#Grad; Grat
+#Graf|Adelstitel; Graph
+#gründlich; grünlich
+#hast; hasst
+#isst; ist
+#leeren; lehren
+#ließ; lies
+#manieriert; mariniert
+#Moor; Mohr
+#reist; reißt
+#Saite; Seite
+#schwul; schwül
+#seid; seit
+#Steak; Steg
+#Städte|Plural von 'Stadt'; Stätte
+#Ställe; Stelle
+#unternehmen; Unternehmen
+#wahr; war
+#wen; wenn
+#ei; ein
+#werden; werfen
+#Rat; Rad
+#Wahl; Wal
+#wahr; war
+#weiß, weis
+#wider, wieder

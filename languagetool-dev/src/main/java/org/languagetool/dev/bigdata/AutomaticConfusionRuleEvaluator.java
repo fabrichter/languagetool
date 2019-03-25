@@ -47,13 +47,14 @@ class AutomaticConfusionRuleEvaluator {
   private static final List<Long> EVAL_FACTORS = Arrays.asList(10L, 100L, 1_000L, 10_000L, 100_000L, 1_000_000L, 10_000_000L);
   private static final float MIN_PRECISION = 0.95f;
   private static final float MIN_RECALL = 0.1f;
+  private static final boolean useFactors = false;// true - use eval factors, false - use logistic regression
 
   private final IndexSearcher searcher;
   private final Map<String, List<ConfusionSet>> knownSets;
   private final Set<String> finishedPairs = new HashSet<>();
   private final String fieldName;
   private final boolean caseInsensitive;
-  
+
   private int ignored = 0;
 
   private AutomaticConfusionRuleEvaluator(File luceneIndexDir, String fieldName, boolean caseInsensitive) throws IOException {
@@ -122,14 +123,19 @@ class AutomaticConfusionRuleEvaluator {
     try {
       File sentencesFile = writeExampleSentencesToTempFile(new String[]{part1, part2});
       List<String> input = Arrays.asList(sentencesFile.getAbsolutePath());
-      Map<Long, RuleEvalResult> results = evaluator.run(input, part1, part2, MAX_EXAMPLES, EVAL_FACTORS);
-      Map<Long, RuleEvalResult> bestResults = findBestFactor(results);
-      if (bestResults.size() > 0) {
-        for (Map.Entry<Long, RuleEvalResult> entry : bestResults.entrySet()) {
-          System.out.println("=> " + entry.getValue().getSummary());
+      if (useFactors) {
+        Map<Long, RuleEvalResult> results = evaluator.runWithFactors(input, part1, part2, MAX_EXAMPLES, EVAL_FACTORS);
+        Map<Long, RuleEvalResult> bestResults = findBestFactor(results);
+        if (bestResults.size() > 0) {
+          for (Map.Entry<Long, RuleEvalResult> entry : bestResults.entrySet()) {
+            System.out.println("=> " + entry.getValue().getSummary());
+          }
+        } else {
+          System.out.println("No good result found for " + part1 + "/" + part2);
         }
       } else {
-        System.out.println("No good result found for " + part1 + "/" + part2);
+        RuleEvalResult result = evaluator.runWithLogisticRegression(input, part1, part2, MAX_EXAMPLES);
+        System.out.println("=> " + result.getSummary());
       }
       finishedPairs.add(part1 + "/" + part2);
     } catch (TooFewExamples e) {

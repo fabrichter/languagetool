@@ -26,6 +26,7 @@ import org.languagetool.chunking.EnglishChunker;
 import org.languagetool.languagemodel.LanguageModel;
 import org.languagetool.languagemodel.LuceneLanguageModel;
 import org.languagetool.rules.*;
+import org.languagetool.rules.bert.BertConfusionProbabilityRule;
 import org.languagetool.rules.en.*;
 import org.languagetool.rules.neuralnetwork.NeuralNetworkRuleCreator;
 import org.languagetool.rules.neuralnetwork.Word2VecModel;
@@ -204,7 +205,8 @@ public class English extends Language implements AutoCloseable {
   @Override
   public List<Rule> getRelevantLanguageModelRules(ResourceBundle messages, LanguageModel languageModel) throws IOException {
     return Arrays.<Rule>asList(
-        new EnglishConfusionProbabilityRule(messages, languageModel, this),
+        new BertConfusionProbabilityRule(messages, this, languageModel, "127.0.0.1", 50051),
+        //new EnglishConfusionProbabilityRule(messages, languageModel, this),
         new EnglishNgramProbabilityRule(messages, languageModel, this)
     );
   }

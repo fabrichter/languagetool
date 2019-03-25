@@ -1,0 +1,774 @@
+# English confusion sets, mostly homophones
+# Original source: After the Deadline's data/rules/homophonedb.txt
+# URL: http://openatd.wordpress.com/ or https://openatd.svn.wordpress.org/atd-server/data/rules/homophonedb.txt
+# License: GNU Lesser General Public License as published by the Free Software Foundation; either
+#          version 2.1 of the License, or (at your option) any later version.
+#
+# Line format:
+# <word1>|<description1>; <word2>|<description2>
+#   <word1> and <word2> are words that can easily be confused
+#   <description> will be used in the error message to explain the word (optional)
+#   <factor> is the factor of how much more the other word must be more
+#            probable so the text is considered potentially incorrect.
+#            Use a higher value for better precision but lower recall.
+#   Precision (p) and recall (r) values in the comments come from ConfusionRuleEvaluator
+#     and are based on Wikipedia, Tatoeba, and Enron data, usually with 1000 random 
+#     sentences (if that many sentence are available for that pair). The number after recall
+#     is the number of sentences used for evaluation.
+# Order is relevant for ambiguous cases like 'know' ('no' or 'now') where the match
+# is used whose pair comes first in this file.
+able; bale
+abstruse|difficult to penetrate;obtuse|between 90 and 180 degrees
+accede|give in, bow;exceed|surpass
+accept|to agree, to endure; except|with the exception of
+accessed|got, retrieved;assessed|evaluated
+access|obtain, retrieve, right to enter;assess|evaluate
+acclamation; acclimation
+acts|third person singular of 'act';ax|tool to split wood
+ad|advertising;add|make an addition
+adapting|making fit;adopting|follow, take over
+addition|adding one thing to another;edition|version, variant
+additions|adding one thing to another; editions|versions, variants
+adds|makes an addition;ads|advertisements
+adolescence; adolescents
+adverse|harmful; averse|strongly disliking
+advice|noun; advise|verb
+affect|experience of emotion; effect|outcome, result
+affects|experiences of emotion;effects|outcomes, results
+affluence|richness;effluence|outflow
+#aids|helps, gives assistance;aides|plural of 'aide' = assistant
+aisle|long narrow passage;isle|small island
+aisles|long narrow passages; isles|small islands
+alliterate|exhibit alliteration;illiterate|person unable to read
+allowed|permitted; aloud|using the voice
+allude|make a disguised reference to;elude|escape
+alludes|makes a disguised reference to; eludes|escapes
+allusion|passing reference; illusion|an erroneous mental representation
+allusions|passing references;illusions|erroneous mental representations
+altar|e.g. table for religious purposes;alter|modify
+altars|e.g. tables for religious purposes; alters|modifies
+alumni|plural; alumnus|singular
+and; end
+anecdote|short story;antidote|substance which can counteract poisoning
+anti|against;auntie|aunt
+apatite|a common complex mineral; appetite|a feeling of craving
+appendices|plural; appendix|singular
+appraise|evaluate, value;apprise|advise, notify
+arrant|complete, thorough;errant|straying from the right course
+artesian|rising to surface under pressure;artisanal|made by an artisan
+as; at
+ascent|rise, climb;assent|agreement
+aspect|a distinct feature;respect|an attitude of admiration
+aspects|distinct features; respects|third person singular of 'respect'
+ate|past of 'to eat'; eight|the number '8'
+aural|relating to the ears; oral|relating to the mouth
+Australia|the continent; Austria|country in Europe
+avid; avoid
+aw; awe
+awe; oar
+axes|plural; axis|singular
+bacteria|plural; bacterium|singular
+bade; bayed
+bad|opposite of 'good'; bed|place to sleep
+bail|release after a security has been paid;bale|a large bundle
+baize|coarse woollen/cotton cloth;bays|indentations of the shoreline
+balled|formed into a ball;bawled|shouted loudly
+ballet|concert dance;ballot|vote
+ballets|concert dances; ballots|votes
+ballot|vote;bullet|projectile fired from a gun
+bard|a lyric poet;barred|prevented from entering
+barely|hardly, just;barley|cereal grain
+bare|naked;bear|animal
+baron|a nobleman;barren|bare, bleak
+basal|elementary;basil|culinary herb
+based; baste
+base|foundation, groundwork;bass|lowest part of the musical range
+baud|data transmission rate;bawd|prostitute
+bawdily; bodily
+bazaar|a market; bizarre|very strange
+bean|large plant seed; been
+beau|dandy;bow|bend one's knee or body
+beaus|boyfriends; bows|bend one's knee or body
+be; bee|insects
+bedding|bed clothing; betting|stake on the outcome of an issue
+been; bin|container
+begin|start; being|living thing
+belief|noun;believe|verb
+beliefs|plural noun; believes|third person singular verb
+bellow|very loud utterance; below|beneath, at a lower place
+benefactor|person who helps people;beneficiary|recipient of benefits
+berth|tie up;birth|act of bringing forth offsprings
+berths|ties up; births|plural of 'birth'
+besot|make dull;besought|pressed, conjured
+best; bets
+be; we
+bib; bibb
+bidder; bitter
+bidders; bitters
+bights; bites
+billed|being charged;build|construct, make
+bit; but
+bite|a mouthful;byte|sequence of 8 bits
+bites; bytes
+blew|past of 'blow';blue|color
+bloc|a group of countries;block|city block, a solid piece of something
+blocks|city blocks, solid pieces; blocs|groups of countries
+blunt|not sharp, frank;brunt|main force of a blow
+board|a committee;bored|tired
+boated; boded
+boating; boding
+bode|stayed;bowed|bended one's knee or body
+bond|a type of debt security;bound|edge, boundary
+bonds|a type of debt security;bounds|edges, boundaries
+bootees; booties
+borrow|get temporarily; lend|give temporarily
+borrows|get temporarily; lends|give temporarily
+bough|branch of a tree; bow|bend one's knee or body
+bounce|spring back;bounds|lines determining the limits of an area
+braid|a hairdo;brayed|past of 'bray'
+braise; braze
+braise|cook in liquid;brays|cries of a donkey
+brake|mechanical device to stop motion|interruption;break
+brakes|mechanical device to stop motion;breaks|interruptions
+breach|failure to perform some promised act; breech|rear of barrel
+breaches|failure to perform some promised act; breeches|rear of barrel
+bread|food made from dough;bred|past of 'breed'
+breath|noun; breathe|verb
+breathes|verb; breaths|plural noun
+brewed|past of 'brew';brood|the young of an animal
+brews|drinks;bruise|injury
+bridal|of or relating to a wedding;bridle|headgear for a horse
+brows|eyebrows;browse|shop around, surf
+bruit; brute
+bused|sent around by bus; bust|female chest
+bussed|sent around by bus;bust|female chest
+but; butt
+but; nut
+buy|purchase; bye|goodbye
+by; my
+cached|stored for future use;cashed|exchanged for cash
+caller|person starting a phone call;collar|part of clothing
+callers|person starting a phone call; collars|part of clothing
+capital|money or property, seat of government;capitol|building
+carat|unit of weight;caret|the '^' character
+career|occupation;courier|messenger
+carpal|wrist bone;carpel|a simple pistil
+carpals|wrist bone; carpels|simple pistils
+case|event, lawsuit, instance; cause|reason
+cases|events, lawsuits, instances; causes
+cast|cast of characters in a movie;caste|social class
+caught; cot
+caught; court
+cawed; chord
+cease|stop, discontinue;seize|take hold of
+ceases|stops; seizes|takes hold of
+cede|surrender;seed|an embryonic plant
+cedes|surrenders; seeds|embryonic plants
+celebrate|have a celebration;celibate|voluntarily being unmarried
+celebrates|have a celebration; celibates|voluntarily being unmarried
+celery|cultivated herb; salary|wage, pay
+cellar|basement;seller|someone who sells goods or services
+cells; sells
+cell|the functional basic unit of life;sell|exchange for money
+censer|container for burning incense;censor|someone who censures
+censor|someone who censures;censure|harsh criticism
+censor|someone who censures;sensor|detector
+censors|people who censure; sensors|detectors
+census|count of the population;senses|perceptions like sight and hearing
+cent|monetary unit;scent|perfume
+cereal|food grain;serial|sequential
+cereals|food grains; serials|plural of 'serial' (sequential)
+cere|wrap up in a cerecloth;sear|make very hot and dry
+chard|leafy green vegetable;charred|burnt to charcoal
+chased|went after to catch;chaste|morally pure
+Chicago; Chicano
+chance|opportunity; change|alteration, modification
+chewn; tune
+choral|choir, musical ensemble of singers;coral|marine invertebrates
+chord|combination of notes; cord|line made of twisted fibers
+chords|combinations of notes; cords|lines made of twisted fibers
+citing|mention, refer;sighting|the act of observing
+clack|a noise;claque|a group hired to applaud
+clamber|climb awkwardly; clamor|a loud harsh noise
+clambers|climb awkwardly; clamors|a loud harsh noise
+click|mouse click, short metallic sound;clique|ingroup
+climactic|forming a climax; climatic|relating to climate
+climb|go upward;clime|climate
+climbs|go upward; climes|climate
+close|shut;clothes|dresses
+coal|fossil fuel;cole|cabbage
+coals|fossil fuels; coles|cabbages
+coarse|rough-cut, harsh;course|class, path, track
+coat|clothing;cote|shelter for domestic animals
+coats|clothing; cotes|shelter for domestic animals
+coax|coax cable;cokes|carbon fuel, Coca Cola
+coco; cocoa
+coffer|a chest for storing valuables;cougher|person who coughs
+coiffeur|hairdresser;coiffure|hair style
+coif; quaff
+coir; coyer
+cold; could
+collaborate|work together;corroborate|confirm
+collaborates|work together; corroborates|confirm
+coma|state of deep unconsciousness;comber|person who separates the fibers of cotton
+coma|state of deep unconsciousness;comma|punctuation character ','
+compete; complete
+competes; completes
+complacently|in a self-satisfied manner; complaisantly|willing to please
+complacent|self-satisfied;complaisant|obliging 
+complains|3rd person of 'complain'; complaints|plural of noun 'complaint'
+complain|express discontent (verb); complaint|expression of grievance (noun)
+complement|to add to so as to improve; compliment|an admiring remark
+conch|a shell;conk|hairdo, colloquial for 'nose'
+conjecture|speculation, guess; conjuncture|combination of events
+con|an argument opposed to a proposal; khan|title given to rulers
+conscience|moral sense;conscious|knowing
+coo|speak softly;coup|putsch, takeover
+coos|speak softly; coups|putsch, takeover
+copes|third person singular of 'cope';copse|a dense growth of bushes
+cor; core
+cord|a line made of twisted fibers;cored|removed the core from
+cosign|sign jointly;cosine|trigonometric function of an angle
+cosigns|sign jointly; cosines|trigonometric function of an angle
+cousin|the child of your aunt or uncle; cozen
+cousins|the child of your aunt or uncle; cozens
+coward|a person who shows fear;cowered|huddled
+craft|skilled practice;kraft|Kraft paper
+crafts|skilled practice; krafts|Kraft paper
+crate; create
+crates; creates
+crewel|surface embroidery using wool;cruel|brutal, barbarous
+crews|plural of 'crew' = persons who man a vehicle;cruise|an ocean trip
+crises|plural; crisis|singular
+crochet|create by looping or crocheting;crotchet|a sharp curve or crook
+cue|a clue; queue|waiting line
+cued; queued
+dairy|business processing animal milk;diary|a daily written record
+dam|constructed barrier;damn|expletive
+dear|address at the beginning of a letter;deer|animal
+deceased|dead; diseased|pathological
+decent|nice, correct; descent|downward movement, origin
+deducible|capable of being deduced;deductible|acceptable as a tax deduction
+defamation|a false accusation;deformation|distortion
+defamations|a false accusation; deformations|distortion
+defiantly|in a rebellious manner; definitely|without question
+defuse|remove the triggering device; diffuse|spread over a wide area
+defuses|remove the triggering device; diffuses|spread over a wide area
+demur|take exception to; demure|overmodest
+descent|a movement downward; dissent|a difference of opinion
+desert|arid land; dessert|last course of a meal
+deviant|noun, adjective, or verb;deviate|noun or adjective
+deviants|noun, adjective, or verb; deviates|noun or adjective
+device|a constructed tool;devise|contrive, invent
+diagnoses|plural; diagnosis|singular
+dialogue|a conversation;discuss|verb: talk about
+died;dyed
+die|decease, pass away;dye|color with dye
+dies|plural of 'dice', third person of 'die';dyes|third person of 'dye'
+dire|desperate;dyer|someone whose job is to dye cloth
+discreet|marked by modesty;discrete|distinct
+discussed|past of 'discuss';disgust|strong feelings of dislike
+disinterested|unaffected by self-interest; uninterested|not interested
+does|third person of 'do'; dose
+dos|colloquial plural of 'do';dues|a payment that is due
+dosed|treated with some kind of application;dozed|slept lightly
+do; to
+dragged|pulled; drug|substance used as a medicine
+dual|double, two-fold;duel|a prearranged fight
+ear; eat
+earn|gain, make;urn|a vase
+earns|3rd person of 'earn' (gain); urns|plural of 'urn' (vase)
+ears; eats
+either; ether|a substance/medium
+elicit|call forth emotions;illicit|unlawful
+ellipses|plural; ellipsis|singular
+elude|escape, physically or mentally;illude|dilude, fool
+em|1/6 inch;mi|nautical mile
+eminent|standing above others;imminent|close in time
+emit|give out;omit|exclude
+emits|give out; omits|exclude
+emitting|giving out;omitting|excluding
+emphases|plural; emphasis|singular
+endemic|present in a particular locality;epidemic|widespread outbreak
+ensured|guarantee, assured;insured|covered by insurance
+entomology|study of insects;etymology|a history of a word
+envelop|enwrap, enclose; envelope|flat container for a letter
+envelopes|flat containers for a letter;envelops|enwraps, encloses
+epic|epic poem, heroic, larger-than-life;epoch|a period of time
+epics|epic poem;epochs|periods of time
+epitaph|inscription on a tombstone;epithet|descriptive word or phrase
+ere|before (archaic); heir|a person to inherit the estate of another
+exact|accurate;extract|pull out
+except|with the exception of; expect|regard something as likely
+excepts|take exception to; expects|regard something as likely
+existing; exiting
+expert; export
+extend|verb; extent|noun
+fain|having made preparations;feign|pretend
+fair|noun: trade fair, adj: just;fare|money paid for transportation
+fairs;fares
+fairy|a small being with magical powers;ferry|ferryboat
+farther|more distant; father|male parent, dad
+fast; fats
+fazed|unsettled, bothered;phased|arrange in phases
+feat|effort;feet|plural of 'foot'
+fee; feel
+feels; fees
+fee; free
+feet|plural;foot|singular
+ferrate|inorganic anion;ferret|a mammal similar to a weasel
+feted|celebrated;fetid|foul, smelly
+field; filled
+fill; full
+fills|makes full;fils|fractional monetary unit
+find; fine
+finds|third person of 'find';fines|money penalties
+fir; for
+fir; fur
+firs; furs
+first; fist
+fiscal|related to financial matters;physical|related to physics
+five; give
+fives; gives
+flea|insect;flee|run away quickly
+fleas|insect; flees|run away quickly
+flecks|small fragment;flex|flex a muscle
+flew|past of 'fly';flu|influenza
+flocks|move as a crowd;phlox|a flower
+flour|powder made by grinding cereal grains;flower|part of a plant
+foe; for
+foreword|preface;forward|directed toward the front
+form;from
+for|preposition as in 'I have something for you'; four|the number '4'
+forth;fourth|in the fourth place
+foul|violation of rule in sports;fowl|a bird
+fraud|intentional deception; fraught|marked by distress
+frays|rubs, scratches;phrase|sequence of words
+freeze|turn to ice; frieze|an architectural ornament
+gaited;gated|surrounded by a gate
+gait|pace;gate|barrier in a fence
+geese|plural; goose|singular
+gild|club, guild;gilled|provided with gills
+gnawed|bite or chew on with the teeth;nod|nodding the head
+gnu|large African antelope;knew|past of 'know'
+god; good
+gods; goods
+gored|wounded by piercing with a sharp object;gourd|bottle
+grade|course, class;grayed|made gray
+graft|transplant, bribery;graphed|plotted upon a graph
+grays|colors;graze|a superficial abrasion
+guessed|past of 'guess';guest|invited person
+guise|pretense;guys|informal for 'men'
+had|past of 'have'; hat|head covering
+hail|a form of solid precipitation;hale|force, squeeze
+hair|grows from the skin of mammals;hare|animals similar to rabbits
+hairs|plural of 'hair';hares|rabbits
+half;have
+half|noun/adjective; halve|verb
+halves|one of two equal parts (plural);haves|rich persons
+heal|cure;heel|bottom of a shoe or boot
+heard|past of 'hear';herd|group of e.g. cattle
+hear; heart
+hears; hearts
+hear|perceive with the ears;here|this place
+heroin|drug;heroine|female hero
+he; the
+hew|make or shape as with an axe;hue|the quality of a color
+hews|make or shape as with an axe; hues|the quality of a color
+hide|conceal;hied|moved hurridly
+higher|comparative of 'high'; hire|employ
+him|personal pronoun;hymn|anthem
+hoard|save up as for future use; horde|a vast multitude
+hoping; hopping
+hostel|inexpensive hotel;hostile|unfriendly
+hostels|inexpensive hotel; hostiles|enemy's troops
+hours|period of time;ours|belonging to us
+idol|someone who is adored;idyl|a short poem
+idols|someone who is adored; idyls|a short poem
+imply|suggest indirectly; infer|draw a conclusion
+improved|made better;improvised|performed without preparation
+incites|moves, motivates;insights|clear perception of a situation
+inc|short for 'incorporated';ink|a liquid used for printing or writing
+in; inn|a hostel
+inns|hotels;ins|short for 'inch'
+is; us
+juggler|a performer who juggles objects;jugular|jugular vein
+just; juts
+kind; king
+kinds; kings
+knead|massage;need|require
+kneads|massage; needs|require
+knew|past of 'know';new|having just been made
+knight|person of noble birth trained to arms;night|opposite of day
+knows|third person singular of 'know'; noes|plural of 'no'
+knows|third person singular of 'know'; nose|the organ of smell
+know|to be aware of; known|past participle of 'know'
+know|to be aware of; no|negation
+know|to be aware of; now|in this moment
+lacks|third person of 'lack';lax|lacking in strictness
+land|ground; lend|give temporarily
+lands|plural of 'land'; lends|3rd person of 'lend'
+laps|upper side of the thighs of a seated person;lapse|oversight
+lead|take somebody somewhere;led|past of 'lead'
+lean|thin;lien|a form of security interest
+leans|3rd person of 'lean'; liens|a form of security interest
+leased|past of 'lease';least|to the lowest degree
+leave; live
+leaved|having leaves; left|past of 'leave'
+leaves; lives
+lees; less
+lends|past of 'lend';lens|optical device
+lessen|decrease;lesson|unit of instruction
+liable|subject to legal action;libel|malicious publication
+liar|person not telling the truth;lyre|instrument
+lichen|skin diseases;liken|describe as similar
+lichens|skin diseases; likens|describe as similar (3rd person)
+lies; lines
+lieu|position as in 'in lieu of';loo|a toilet
+life|noun;live|verb, adjective, or adverb
+limb|appendage of a human or animal;limn|trace the shape of
+limbs|appendages of a human or animal;limns|traces the shape of
+links|connection between things;lynx|wildcat
+literal|actual, real;littoral|the region of the shore
+literals|misprints; littorals|the regions of the shore
+live; love
+loan|temporary provision of money;lone|alone
+loch|Scottish word for a lake;lock|e.g. door lock
+locks|plural of noun or third person of verb 'lock';lox|brined salmon
+lode|deposit of valuable ore;lowed|mooed
+lo;low|less than normal in amount
+loose|not tight; lose|opposite of win
+loos|plural of 'loo' (toilet);lose|cease to have
+loot|plunder;lute|musical instrument
+lumbar|abdominal segment of the torso (adj.);lumber|processed wood
+mach|the Mach number;mock|imitate
+made|past of 'make';maid|housemaid
+mail|postal service;male|gender
+maize|cereal;maze|labyrinth
+manners|style, mode; manors|mansion of a wealthy person
+manner|style, mode;manor|mansion of a wealthy person
+man|singular; men|plural
+marital|relating to the state of marriage;martial|soldierlike
+marry|get married;merry|jolly, festive
+massed|joined together into a mass;mast|vertical spar for sails
+matrices|plural; matrix|singular
+median|median value;medium|a means for storing or communicating
+memoranda|plural; memorandum|singular
+mewl|cry weakly;mule|animal
+mice|plural; mouse|singular
+mice|plural of 'mouse'; nice|pleasant
+might|modal verb, power; mite|tiny invertebrate animal
+militate|have force or influence;mitigate|make less severe
+militates|have force or influence; mitigates|make less severe
+mince|soften, moderate;mints|plants
+minces|food chopped into small bits; mints|plants
+mind|brain;mined|past of 'mine'
+minds|brain; mines|3rd person of 'mine'
+minding|being bothered by;mining|extracting ores or coal etc from the earth
+minuet|piece of music and dance; minute|60 seconds
+minuets|pieces of music and dance; minutes|60 seconds
+missed|past of 'miss';mist|fog
+mist|thin fog; must|have to
+mode|manner, modality; mowed|past of 'mow' (cut down)
+mood|psychological state;mooed|past of 'moo' (the cow noise)
+morale|principles of right and wrong;morel|edible mushrooms
+moral|ethics, significance of a story;morale|psychological well-being
+morales|psychological well-being; morals|ethics, significance of a story
+morning|early time of the day;mourning|lamentation
+morn|morning;mourn|feel sadness
+most; mot
+mow; now
+mustard|an often spicy condiment;mustered|gathered together
+nays|archaic form of no (plural);neighs|sounds made by a horse
+near|close to; neat|clean or organized
+new; news
+nit; not
+no|negation; now|at the present moment
+none|not at all;nun|religious woman
+no; on
+not; note
+not; nut
+oases|plural; oasis|singular
+oh|interjection to express surprise;owe|be obliged to pay
+ohs|interjection (plural);owes|third person singular of 'owe'
+on; one
+oohs|utterings of 'ooh';ooze|slime, goo
+or; ore
+our; out
+ours; outs
+out; put
+overdo|exaggerate;overdue|past due
+overhead|operating cost;overheard|listen
+own; won
+paced|walked;paste|glue
+packed|full;pact|written agreement
+pail|bucket;pale|very light colored
+pails|buckets;pales|turns pale
+pairs|a set of two (plural);pares|pares down, strips the skin off
+palate|roof of the mouth; palette|range of colours
+pare|pare down, strip the skin off;pear|fruit
+pares|pares down, strips the skin off;pears|fruit
+passed|paste tense of 'to pass'; past|past times
+patience|tolerance of delay;patients|person who gets medical care
+peace|absence of war; piece|a portion of a natural object
+peaked|reached the highest point;peeked|took a brief look
+peak|extremum, summit, top; peek|a secret look
+pealed|sounded loudly;peeled|stripped the skin off
+peal|sound;peel|skin
+peals|sound; peels|strip the skin off
+pea|seed of a pea plant;pee|urine
+peeked|took a brief look;piqued|offended
+peek|take a brief look;pique|offend, cloth weaving style
+peeks|take a brief look; piques|offend, cloth weaving style
+peers|persons in a group;piers|wharfs, docks
+picnic|outdoor social gathering;pyknic|having a squat and fleshy build
+pieced|joined the pieces of;piste|a ski run
+placed|past of verb 'place'; places|noun, third person verb
+plains|flat areas;planes|airplanes
+plain|simple;plane|airplane
+plan; plant
+plans; plants
+pleaded|appealed;pleated|pleated into a ruffle
+pleas|noun: requests;please|adverb used in polite request
+pointed; pointer
+pole|a long (usually round) rod;poll|opinion poll
+poled|propel with a pole;polled|vote in an election or survey
+pooling;pulling|gerund of 'pull'
+pools|swimming pools;pulls
+pool|swimming pool;pull|move something toward
+populace|the public;populous|densely populated
+pores|tiny holes;pours|causes to run
+pore|tiny hole;pour|cause to run
+portable|easily transportable;potable|beverage
+portables|small typewriter; potables|beverage
+port;post
+portrait|noun;portray|verb
+portraits|noun;portrays|verb
+praised|expressed approval of;prayed|addressed an object of worship
+prayed|addressed an object of worship;preyed|hunted
+prays|addresses an object of worship;preys|hunts
+pray|say a prayer; prey|animal hunted for food
+precede|come before;proceed|continue
+preceded|came before;proceeded|continued
+precedence|priority;precedents|example used to justify similar occurrences
+precedes|comes before;proceeds|continues
+preceding|coming before;proceeding|continuing
+presence|state of being present;presents|gifts
+prince|son of a sovereign;prints|printed publications
+principal|school principal; principle|fundamental rule or belief
+principals|school principals;principles|fundamental rules or beliefs
+profit|net income;prophet|someone who speaks by divine inspiration
+profits|net income;prophets|persons who speak by divine inspiration
+proof|often noun, also 'proofread'; prove|verb: show, testify, demonstrate
+pros|an argument in favor of a proposal;prose|ordinary writing
+prostate|prostate gland (noun); prostrate|bow down (verb)
+psi|Greek letter, unit of pressure;sigh|utterance
+quiet|free of noise; quite|completely, to a degree
+quit|stop, give up; quite|completely, to a degree
+racking|stretching to the limits;wracking|breaking forcefully
+raise|increase the level or amount;rays|beam (of light)
+rampant|violent;rampart|wall
+rap|rap music;wrap|a cover for protection
+raps|rap music;wraps|covers for protection
+rapt|strike sharply;wrapped|wrapped up, enclosed
+ray|beam;re
+reach|arrive at; rich|wealthy
+reaches|arrive at; riches|wealth
+read|something that is read;red|a color
+reads|thing that are read;reeds|tall woody perennial grasses
+real|occurring in reality;reel|a roll of photographic film
+recede|retreat, pull back;reseed|seed again
+reeked|smelled;wreaked|caused to happen
+reek|stink, stench;wreak|cause to happen
+rested|not moving (past);wrested|obtain by seizing forcibly
+review|critique;revue|a variety show
+rigger|someone who rigs ships;rigor|hardship, validity
+riggers|someone who rigs ships; rigors|hardship, validity
+right|correct;write|communicate or express by writing
+right|opposite of 'left'; rite|established ceremony or practice
+rights|laws;writes|expresses by writing
+ringing|sound of a bell ringing;wringing|twisting out of shape
+rite|religious rite;wright|someone who makes or repairs something
+rites|religious rites;writes|expresses by writing
+role|function, character;roll|rotary motion
+roles|functions, characters;rolls|rotary motion
+roomie|roommate (noun);roomy|roommate (noun) or spacious (adj.)
+rooted|originated;routed|sent to destinations
+root|underground organ of a plant;route|an established line of travel
+rose|past of 'rise', a plant;rows|arrangement of thing side by side
+rote|memorization by repetition;wrote|past of 'write'
+rot|state of decay;wrought|worked
+roux|mixture of fat and flour;rue|plant
+rude|ill-mannered;rued|feel sorry for
+sacks|paper bags;sax|saxophone
+sacred|holy;scared|frightened
+sails|used to propel a sailing vessel;sales|the activity of selling
+sail|used to propel a sailing vessel;sale|an instance of selling
+same|identical; sane|mentally healthy
+same; some
+sand; stand
+sands; stands
+saner|more sane, mentally healthier;seiner|boat for seine fishing
+sank; sink
+sate; state
+sat; seat
+sat; set
+saver|someone who saves;savor|flavor, take pleasure in
+savers|someone who saves; savors|flavor, take pleasure in
+sawed|cut with a saw;sod|turf
+scene|place where some action occurs; seen|past participle of 'see'
+scent|perfume;sent|past of 'send'
+seamen|men who serve as sailors;semen|ejaculate
+sea|ocean; see|to look at
+seas|divisions of an ocean;sees|third person singular of 'see'
+seat; set
+seats; sets
+sects|religious sects;sex|sexual activity
+sees|third person singular of 'see';seize|take hold of
+sense|conscious awareness;since|from a specified time in the past
+servers|plural of 'server'; serves|third person of 'serve'
+serge|a type of twill fabric;surge|rush, upsurge
+serges|a type of twill fabric; surges|rush, upsurge
+sever|break up, cut off;severe|extremely bad or unpleasant
+shall|a verb;shell|hard outer covering of many animals
+shear|cut with shears;sheer|absolute
+short; shot
+showed|past of 'show';sowed|past of 'sow'
+shown|past participle of 'show';sown|past participle of 'sow'
+show|present;sow|place seeds in the ground
+sic|used to mark an intentionally so written word;sick|ill
+sight|ability to see; site|location
+sing; using
+sign|mark, subscribe, ratify;sine|trigonometric function
+sire|noun: title, verb: make by reproduction; sure|certain
+slay|murder, remove;sleigh|sled, sledge
+slays|murder, remove; sleighs|sled, sledge
+slew|batch, heap;slough|necrotic tissue
+soared|past of 'soare' (rise upward);sword|weapon
+soar|rise upward;sore|hurting, painful
+soars|rise upward; sores|open skin infection
+sole|solitary, only;soul|the immaterial part of a person
+some|a few;sum|amount
+son|a male offspring;sun|our solar system's star
+sonny|little son;sunny|like the sun
+sons|male human offsprings;suns|plural of 'sun'
+soot|carbon black;suit|lawsuit, suit of clothes
+soots|carbon black; suits|lawsuit, suit of clothes
+spoor|trail left by a person;spore|single-celled reproductive body
+spoors|trail left by a person;spores|single-celled reproductive body
+stair|step;stare|gaze
+stairs|step; stares|gaze
+stake|interest;steak|slice of meat
+stared|past of 'stare' (to look);starred|past of 'star'
+staring|gerund of 'stare' (to look);starring|gerund of 'star'
+start; stat
+starts; stats
+stationary|standing still;stationery|letter paper
+steal|take without the owner's consent;steel|an alloy of iron
+step|footstep;steppe|grassland plains
+#storey|level of a building;story|narrative, tale
+straight|directly, heterosexual;strait|narrow channel of the sea
+subsided|died down;subsidized|supported through subsidies
+subside|die down;subsidize|support through subsidies
+subsides|die down; subsidizes|support through subsidies
+suede|suede leather;swayed|shaken
+sue; sure
+suite|musical composition or hotel rooms;sweet|candy
+tails|the rear ends of animals' bodies;tales|stories
+taking; talking
+taper|convex shape that narrows toward a point;tapir|animal
+tapers|convex shape that narrows toward a point; tapirs|animal
+taunt|harass with persistent criticism;taut|tight
+teaming|forming a team;teeming|filled with living things
+teared|ruptured, snapped;tiered|arranged in tiers/level
+tear|rupture, snap;tier|level
+tease|annoy persistently;tees|golf tees
+teas|plural of 'tea' (beverage);tease|annoy persistently
+teeth|plural; tooth|singular
+tense|grammatical category;tents|portable shelters
+tern|seabird;terne|alloy coating
+than; that
+than|used in comparisons; then|next in order
+their|as in 'It’s not their fault.'; there|as in 'Is there an answer?'
+them; then
+theses|plural; thesis|singular
+the; they
+the; to
+thing|noun; think|usually a verb
+things|plural noun; thinks|verb
+thin; thing
+thin; think
+threw|past of throw; through|preposition, e.g. 'go through the door'
+throe|severe spasm of pain;throw|propel through the air
+throes|severe spasms of pain;throws|propel through the air
+throne|chair of a monarch;thrown|participle of 'throw'
+ticks|metallic tapping sounds;tics|habitual twitching esp. in the face
+tide|rise and fall of sea levels;tied|past of 'tie'
+tightens|makes tight;titans|behemoths, giants
+timber|wood;timbre|tone quality
+tired|needing sleep;tried|past of 'try'
+ti; to
+toad|toad frog;toed|having a toe of a specified kind
+tocsin|alarm bell;toxin|poisonous substance
+tocsins|alarm bells;toxins|poisonous substances
+toed|having a toe of a specified kind;towed|dragged behind
+toe|part of the foot;tow|drag behind
+toll; tool
+too; two|the number '2'
+tracked|past of 'track';tract|piece of land
+tray|shallow platform for carrying things;trey|a three in playing cards
+trays|shallow platform for carrying things; treys|a three in playing cards
+vain|fruitless, futile;vane|wind vane
+vale|valley;veil|head covering
+vane|wind vane;vein|blood vessel
+vantage|advantage;vintage|classic
+vary|change, alter; very|to a great extent
+verses|plural of 'Verse';versus|against
+vial|small bottle that contains a drug;vile|despicable, ugly
+vicious|cruel;viscous|like syrup
+vile|despicable, ugly;viol|stringed instrument
+wade|walk through shallow water;weighed|determined the weight of
+wades|walk through shallow water; weights|determine the weight of
+waist|body part between the ribs and hips; waste|worthless material
+waists|body part between the ribs and hips; wastes|worthless material
+wait|anticipate or expect something;weight|mass
+waited|anticipated or expected something; weighted|measured the weight
+waive|do without;wave|oscillation of e.g. water
+waives|dispenses with, forgos;waves|signals with the hands
+wandered|walked around;wondered|questioned
+wandering|walking around;wondering|questioning
+wanders|move about aimlessly;wonders|inquires, questions (verb)
+wander|to walk around;wonder|to question
+wand; want|desire
+war|armed conflict;wore|past of verb 'wear'
+warming|becoming warmer; warning|a message informing of danger
+warm; warn
+warms; warns
+warn|notify of danger;worn|past of verb 'wear'
+warship|combat ship;worship|love uncritically
+wary|marked by caution;wherry|light rowboat
+was; way
+watt|a unit of power;what
+wax; way
+ways|plural of way;weighs|3rd person of verb 'weigh'
+weak|opposite of strong;week|a period of seven days
+weald|area;wheeled|having wheels
+weather|atmospheric conditions; whether|as in 'whether or not'
+weigh|have a certain weight;whey|milk whey
+weld|join together by heating;welled|swelled
+we; wee|a short time
+were; where
+wheeled|having wheels;wield|exert, maintain
+which; witch|female sorcerer or magician
+whiled|past of 'while' (to pass time idly);wild|untamed
+while; whole
+whirred|made a soft swishing sound;word|unit of language
+widow|woman whose husband is dead; window
+wit|humor; with
+woman|singular; women|plural
+worse; worth
+wright; write|communicate or express by writing
+wring; wrong
+wrings; wrongs
+yoke|become joined together;yolk|egg yolk
+you|personal pronoun; your|possessive pronoun
