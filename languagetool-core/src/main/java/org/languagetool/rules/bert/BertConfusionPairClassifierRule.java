@@ -25,7 +25,6 @@ import org.languagetool.AnalyzedSentence;
 import org.languagetool.AnalyzedTokenReadings;
 import org.languagetool.Language;
 import org.languagetool.languagemodel.LanguageModel;
-import org.languagetool.languagemodel.bert.BertLanguageModel;
 import org.languagetool.rules.ConfusionSet;
 import org.languagetool.rules.ConfusionString;
 import org.languagetool.rules.RuleMatch;
@@ -35,12 +34,19 @@ import org.languagetool.tools.StringTools;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class BertConfusionProbabilityRule extends ConfusionProbabilityRule {
-  private final BertLanguageModel bert;
+/**
+ * @since 4.6
+ * Like ConfusionProbabilityRule, but uses trained classifiers instead of probabilities of a language model to detect errors
+ *
+ * Contacts a service to encode sentences w/ BERT, then feeds token embeddings into prepared model; uses logistic regression on top of that network for calibration / precision-recall tuning
+ *
+ * @see org.languagetool.dev.bigdata.ConfusionRuleEvaluator for training code
+ */
+public class BertConfusionPairClassifierRule extends ConfusionProbabilityRule {
 
-  public BertConfusionProbabilityRule(ResourceBundle messages, Language language, LanguageModel lm, String host, int port) {
+  public BertConfusionPairClassifierRule(ResourceBundle messages, Language language, LanguageModel lm, String host, int port) {
     super(messages, lm, language);
-    bert = new BertLanguageModel(host, port);
+    //bert = new BertLanguageModel(host, port);
   }
 
   @Override
@@ -94,10 +100,10 @@ public class BertConfusionProbabilityRule extends ConfusionProbabilityRule {
       //  textToken, alternative, sentence.getText()));
     }
     List<String> candidates = Arrays.asList(textToken, alternative);
-    Map<String, Double> probabilities = bert.getTermProbabilities(sentence, token.get(), candidates);
-    double p1 = probabilities.get(textToken), p2 = probabilities.get(alternative);
-    //double p1Log = p1 == 0.0 ? 0.0 : Math.log10(p1), p2Log = p2 == 0.0 ? 0.0 : Math.log10(p2);
-    features.addAll(Arrays.asList(p1, p2, p1 / p2));
+    //Map<String, Double> probabilities = bert.getTermProbabilities(sentence, token.get(), candidates);
+    //double p1 = probabilities.get(textToken), p2 = probabilities.get(alternative);
+    ////double p1Log = p1 == 0.0 ? 0.0 : Math.log10(p1), p2Log = p2 == 0.0 ? 0.0 : Math.log10(p2);
+    //features.addAll(Arrays.asList(p1, p2, p1 / p2));
     return features;
   }
 
@@ -106,19 +112,19 @@ public class BertConfusionProbabilityRule extends ConfusionProbabilityRule {
     if (!candidates.contains(token.getToken())) {
       candidates.add(token.getToken());
     }
-    Map<String, Double> probabilities = bert.getTermProbabilities(sentence, token, candidates);
-    double currentProb = probabilities.get(token.getToken());
-    for (ConfusionString confused : set) {
-      if (confused.getString().equals(token.getToken())) {
-        continue;
-      }
-      double confusedProb = probabilities.get(confused.getString());
-      //System.out.printf("BertConfusion: %s vs %s : %f vs %f; factor: %d%n", token.getToken(), confused.getString(), currentProb, confusedProb, factor);
-      // TODO: original ConfusionProbabilityRule uses >= MIN_PROB, but that doesn't seem right
-      if (confusedProb > MIN_PROB && confusedProb > currentProb * factor) {
-        return confused;
-      }
-    }
+    //Map<String, Double> probabilities = bert.getTermProbabilities(sentence, token, candidates);
+    //double currentProb = probabilities.get(token.getToken());
+    //for (ConfusionString confused : set) {
+    //  if (confused.getString().equals(token.getToken())) {
+    //    continue;
+    //  }
+    //  double confusedProb = probabilities.get(confused.getString());
+    //  //System.out.printf("BertConfusion: %s vs %s : %f vs %f; factor: %d%n", token.getToken(), confused.getString(), currentProb, confusedProb, factor);
+    //  // TODO: original ConfusionProbabilityRule uses >= MIN_PROB, but that doesn't seem right
+    //  if (confusedProb > MIN_PROB && confusedProb > currentProb * factor) {
+    //    return confused;
+    //  }
+    //}
     return null;
   }
 }

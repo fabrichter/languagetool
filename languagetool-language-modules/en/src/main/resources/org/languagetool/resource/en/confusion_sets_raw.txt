@@ -215,7 +215,7 @@ coma|state of deep unconsciousness;comma|punctuation character ','
 compete; complete
 competes; completes
 complacently|in a self-satisfied manner; complaisantly|willing to please
-complacent|self-satisfied;complaisant|obliging 
+complacent|self-satisfied;complaisant|obliging
 complains|3rd person of 'complain'; complaints|plural of noun 'complaint'
 complain|express discontent (verb); complaint|expression of grievance (noun)
 complement|to add to so as to improve; compliment|an admiring remark

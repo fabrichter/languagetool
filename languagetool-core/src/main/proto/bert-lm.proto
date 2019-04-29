@@ -3,7 +3,6 @@ package bert;
 option java_package = "org.languagetool.languagemodel.bert.grpc";
 option java_outer_classname = "BertLmProto";
 
-
 service BertLm {
     rpc Lookup (LookupRequest) returns (BertLmResponse);
     rpc Predict (PredictionRequest) returns (BertLmResponse);
@@ -35,3 +34,42 @@ message BertLmResponse {
     repeated Prediction result = 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+service BertTokenClassifier {
+    rpc Train (Dataset) returns (Model);
+    rpc Classify (ClassificationRequest) returns (ClassificationResponse);
+}
+
+message Dataset {
+    repeated ClassificationInput input = 1;
+    repeated ClassificationTarget target = 2;
+    repeated bool train = 3;
+}
+
+message ClassificationInput {
+    repeated string sentences = 1;
+    uint32 sentenceIndex = 2;
+    uint32 wordIndex = 3;
+    uint32 wordSize = 4;
+}
+
+message Model {
+    string id = 1;
+    double accuracy = 2;
+}
+
+message ClassificationTarget {
+    uint32 label = 1;
+}
+message ClassificationResult {
+    repeated double probabilities = 1;
+}
+
+message ClassificationRequest {
+   Model model = 1;
+   repeated ClassificationInput input = 2;
+}
+message ClassificationResponse {
+    repeated ClassificationResult result = 1;
+}

@@ -18,6 +18,7 @@
  */
 package org.languagetool.dev.bigdata;
 
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +35,8 @@ import org.languagetool.dev.eval.FMeasure;
 import org.languagetool.language.English;
 import org.languagetool.languagemodel.LanguageModel;
 import org.languagetool.languagemodel.LuceneLanguageModel;
+import org.languagetool.languagemodel.bert.BertTokenClassifier;
+import org.languagetool.languagemodel.bert.grpc.BertLmProto;
 import org.languagetool.rules.ConfusionSet;
 import org.languagetool.rules.Rule;
 import org.languagetool.rules.RuleMatch;
@@ -74,8 +77,11 @@ class ConfusionRuleEvaluator {
   private final ConfusionProbabilityRule rule;
   private final Map<Long, RuleEvalValues> evalValues = new HashMap<>();
   private final LogisticRegressionClassifier classifier = new LogisticRegressionClassifier("127.0.0.1", 50051);
+  private final BertTokenClassifier tokenClassifier = new BertTokenClassifier("127.0.0.1", 50051);
 
   private boolean verbose = true;
+  public static final float TRAIN_TEST_SPLIT = 0.7f;
+  protected Random rng = new Random(0);
 
   ConfusionRuleEvaluator(Language language, LanguageModel languageModel, boolean caseSensitive) {
     this.language = language;
@@ -183,6 +189,24 @@ class ConfusionRuleEvaluator {
     }
   }
 
+  public void export(List<String> inputsOrDir, String token, String homophoneToken, int maxSentences, CSVPrinter trainFile, CSVPrinter testFile) throws IOException {
+    List<Sentence> tokenSentences = getRelevantSentences(inputsOrDir, token, maxSentences);
+    // Load the sentences with a homophone and later replace it so we get error sentences:
+    List<Sentence> homophoneSentences = getRelevantSentences(inputsOrDir, homophoneToken, maxSentences);
+
+    List<EvaluationSample> samples = getEvaluationSamples(tokenSentences, homophoneSentences, token, homophoneToken);
+    Collections.shuffle(samples, rng);
+
+    for (EvaluationSample sample : samples) {
+      boolean train = rng.nextFloat() < TRAIN_TEST_SPLIT;
+      if (train) {
+        trainFile.printRecord(sample.sentence, sample.token, sample.target);
+      } else {
+        testFile.printRecord(sample.sentence, sample.token, sample.target);
+      }
+    }
+  }
+
   static class EvaluationSample {
     String sentence;
     String token;
@@ -204,7 +228,7 @@ class ConfusionRuleEvaluator {
     } else {
       String replacement = text.indexOf(textToken) == 0 ? StringTools.uppercaseFirstChar(homophone) : homophone;
       sample.sentence = text.replaceFirst("(?i)\\b" + textToken + "\\b", Objects.requireNonNull(replacement));
-      sample.token = homophone;
+      sample.token = replacement;
       sample.homophone = textToken;
     }
     return sample;
@@ -229,19 +253,56 @@ class ConfusionRuleEvaluator {
     for (Rule activeRule : allActiveRules) {
       lt.disableRule(activeRule.getId());
     }
-    List<EvaluationSample> samples = new ArrayList<>();
-    for (Sentence sentence : tokenSentences) {
-      samples.add(createSample(sentence.getText(), true, token, homophoneToken));
-      samples.add(createSample(sentence.getText(), false, token, homophoneToken));
-    }
-    for (Sentence sentence : homophoneSentences) {
-      samples.add(createSample(sentence.getText(), true, homophoneToken, token));
-      samples.add(createSample(sentence.getText(), false, homophoneToken, token));
-    }
+    List<EvaluationSample> samples = getEvaluationSamples(tokenSentences, homophoneSentences, token, homophoneToken);
+
+    Collections.shuffle(samples, rng);
 
     List<EvaluationSample> evaluatedSamples = new ArrayList<>();
     List<LogisticRegressionClassifier.Sample> data = new ArrayList<>(samples.size());
 
+    List<String> sentences = samples.stream().map(evaluationSample -> evaluationSample.sentence).collect(toList());
+    List<String> tokens = samples.stream().map(evaluationSample -> evaluationSample.token).collect(toList());
+    List<Boolean> labels = samples.stream().map(evaluationSample -> evaluationSample.target).collect(toList());
+    List<Boolean> split = new ArrayList<>(labels.size());
+    for (int i = 0; i < labels.size(); i++) {
+      split.add(rng.nextFloat() < TRAIN_TEST_SPLIT);
+    }
+
+    BertLmProto.Model bertModel = tokenClassifier.train(sentences, tokens, labels, split);
+    System.out.printf("Trained model '%s' with accuracy %f on pair %s; %s%n", bertModel.getId(), bertModel.getAccuracy(), token, homophoneToken);
+    //BertLmProto.Model bertModel = BertLmProto.Model.newBuilder().setId("9c01b709-290e-424e-bc1b-6098c3a0f6a4").build();
+    List<String> testSentences = new ArrayList<>();
+    List<String> testTokens = new ArrayList<>();
+    List<EvaluationSample> testSamples = new ArrayList<>();
+    for (int i = 0; i < split.size(); i++) {
+      if (!split.get(i)) {
+        testSentences.add(sentences.get(i));
+        testTokens.add(tokens.get(i));
+        testSamples.add(samples.get(i));
+      }
+    }
+    System.out.printf("Evaluating on %d sentences.%n", testSentences.size());
+    List<List<Double>> bertPredictions = tokenClassifier.classify(bertModel, testSentences, testTokens);
+
+    int numFeatures = -1;
+
+    for (int i = 0; i < testSamples.size(); i++) {
+      List<Double> probabilities = bertPredictions.get(i);
+      if (!probabilities.isEmpty()) {
+        if (numFeatures == -1) {
+          numFeatures = probabilities.size();
+        }
+        if (probabilities.stream().anyMatch(p -> p.isInfinite() || p.isNaN())) {
+          continue;
+        }
+        evaluatedSamples.add(testSamples.get(i));
+        data.add(new LogisticRegressionClassifier.Sample(
+          testSamples.get(i).target, probabilities));
+      }
+    }
+
+    // TODO: make this a closure / configurable?
+    /*
     for (EvaluationSample sample : samples) {
       AnalyzedSentence analyzedSentence = lt.getAnalyzedSentence(sample.sentence);
 
@@ -254,7 +315,10 @@ class ConfusionRuleEvaluator {
       evaluatedSamples.add(sample);
       //}
     }
-    LogisticRegressionClassifier.Model model = classifier.train(data, 6);// TODO: getter for numFeatures in ConfusionProbabilityRule
+     */
+    //
+
+    LogisticRegressionClassifier.Model model = classifier.train(data, numFeatures);
 
     RuleEvalValues result = new RuleEvalValues();
     List<Double> predictions = new ArrayList<>(evaluatedSamples.size());
@@ -297,6 +361,20 @@ class ConfusionRuleEvaluator {
     }
 
     return result;
+  }
+
+  @NotNull
+  private List<EvaluationSample> getEvaluationSamples(List<Sentence> tokenSentences, List<Sentence> homophoneSentences, String token, String homophoneToken) {
+    List<EvaluationSample> samples = new ArrayList<>();
+    for (Sentence sentence : tokenSentences) {
+      samples.add(createSample(sentence.getText(), true, token, homophoneToken));
+      samples.add(createSample(sentence.getText(), false, token, homophoneToken));
+    }
+    for (Sentence sentence : homophoneSentences) {
+      samples.add(createSample(sentence.getText(), true, homophoneToken, token));
+      samples.add(createSample(sentence.getText(), false, homophoneToken, token));
+    }
+    return samples;
   }
 
 
