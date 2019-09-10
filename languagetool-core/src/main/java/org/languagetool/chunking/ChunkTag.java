@@ -18,11 +18,13 @@
  */
 package org.languagetool.chunking;
 
+import java.io.Serializable;
+
 /**
  * The name of a chunk. Just a string - this class exists mostly for better type safety.
  * @since 2.3
  */
-public class ChunkTag {
+public class ChunkTag implements Serializable {
 
   private final String chunkTag;
 

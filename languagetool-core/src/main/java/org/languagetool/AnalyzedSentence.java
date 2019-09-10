@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.languagetool.tools.StringTools;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -29,7 +30,7 @@ import java.util.*;
  * 
  * @author Daniel Naber
  */
-public final class AnalyzedSentence {
+public final class AnalyzedSentence implements Serializable {
 
   private final AnalyzedTokenReadings[] tokens;
   private final AnalyzedTokenReadings[] preDisambigTokens;

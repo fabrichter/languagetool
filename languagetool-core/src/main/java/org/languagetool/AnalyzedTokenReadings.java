@@ -19,14 +19,15 @@
 
 package org.languagetool;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.languagetool.chunking.ChunkTag;
 import org.languagetool.tools.StringTools;
+
+import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import static org.languagetool.JLanguageTool.*;
 
@@ -36,7 +37,7 @@ import static org.languagetool.JLanguageTool.*;
  * 
  * @author Marcin Milkowski
  */
-public final class AnalyzedTokenReadings implements Iterable<AnalyzedToken> {
+public final class AnalyzedTokenReadings implements Iterable<AnalyzedToken>, Serializable {
 
   private static final Pattern NON_WORD_REGEX = Pattern.compile("[.?!…:;,~’'\"„“”»«‚‘›‹()\\[\\]\\-–—*×∗·+÷/=]");
 
