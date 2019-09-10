@@ -20,6 +20,7 @@ package org.languagetool;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -27,7 +28,7 @@ import java.util.Objects;
  * 
  * @author Daniel Naber
  */
-public final class AnalyzedToken {
+public final class AnalyzedToken implements Serializable {
 
   private final String token;
   private final String posTag;

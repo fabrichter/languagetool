@@ -20,6 +20,7 @@ package org.languagetool.markup;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,7 +31,7 @@ import java.util.Objects;
  * Use {@link AnnotatedTextBuilder} to create objects of this type.
  * @since 2.3
  */
-public class AnnotatedText {
+public class AnnotatedText implements Serializable {
 
   /**
    * @since 3.9
