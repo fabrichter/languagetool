@@ -28,7 +28,7 @@ import java.util.*;
  * Use {@link AnnotatedTextBuilder} to create objects of this type.
  * @since 2.3
  */
-public class AnnotatedText {
+public class AnnotatedText implements Serializable {
 
   /**
    * @since 3.9

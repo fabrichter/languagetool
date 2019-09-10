@@ -18,6 +18,7 @@
  */
 package org.languagetool.markup;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -25,7 +26,7 @@ import java.util.Objects;
  * or markup (to be ignored by LanguageTool).
  * @since 2.3
  */
-public class TextPart {
+public class TextPart implements Serializable {
 
   public enum Type {TEXT, MARKUP, FAKE_CONTENT}
 

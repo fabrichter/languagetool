@@ -23,6 +23,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -30,7 +31,7 @@ import java.util.*;
  * 
  * @author Daniel Naber
  */
-public final class AnalyzedSentence {
+public final class AnalyzedSentence implements Serializable {
 
   // objects of this type are cached, so everything needs to be immutable
   private final AnalyzedTokenReadings[] tokens;
