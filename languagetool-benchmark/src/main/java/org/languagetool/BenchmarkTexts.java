@@ -83,9 +83,13 @@ public class BenchmarkTexts {
     if (cached.exists()) {
       loadFromCache(cached);
     } else {
-      List<Language> languages = Collections.singletonList(Languages.getLanguageForShortCode("en"));//Languages.get();
-      for (Language language : languages) {
-        benchmarkData.put(language.getShortCode(), new BenchmarkText(language));
+      // don't analyze separately for language variants
+      List<String> languages = RuleBenchmark.Settings.languages();
+      for (String langCode : languages) {
+        if (!benchmarkData.containsKey(langCode)) {
+          Language language = Languages.getLanguageForShortCode(langCode);
+          benchmarkData.put(language.getShortCode(), new BenchmarkText(language));
+        }
       }
       saveToCache(cached);
     }

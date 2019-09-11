@@ -36,6 +36,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -67,6 +68,11 @@ public class RuleBenchmark {
     static String cacheFile() {
       return Paths.get(System.getProperty("benchmarkCache", "/tmp/"),
         "benchmark-data-cache.bin").toString();
+    }
+
+    static List<String> languages() {
+      return Arrays.asList(Objects.requireNonNull(
+        System.getProperty("benchmarkLanguages").split(",")));
     }
 
     @Nullable
@@ -109,33 +115,25 @@ public class RuleBenchmark {
     sentences = data.get(language).sentences;
   }
 
-  //@AuxCounters(AuxCounters.Type.OPERATIONS)
-  //@State(Scope.Thread)
-  //public static class SentenceCount {
-  //  public int sentences = 0;
-  //}
-
   @Benchmark
-  public void testRule(/*SentenceCount sentenceCount, */Blackhole bh) throws IOException {
+  public void testRule(Blackhole bh) throws IOException {
     for (AnalyzedSentence s : sentences) {
       for (Rule r : rules) {
         bh.consume(r.match(s));
       }
     }
-    //sentenceCount.sentences += sentences.size();
   }
 
   public static void main(String[] args) throws RunnerException {
-    //List<Language> languages = Collections.singletonList(Languages.getLanguageForShortCode("en-US"));
-    List<Language> languages = Languages.get();
-    for (Language lang : languages) {
+    List<String> languages = Settings.languages();
+    for (String langCode : languages) {
+      Language lang = Languages.getLanguageForShortCode(langCode);
       JLanguageTool lt = new JLanguageTool(lang);
       String[] ruleIDs = lt.getAllActiveRules().stream()
         .filter(r -> !(r instanceof TextLevelRule))
         .map(Rule::getId)
         .distinct()
         .toArray(String[]::new);
-      String langCode = lang.getShortCodeWithCountryAndVariant();
       Options opt = new OptionsBuilder()
         .resultFormat(ResultFormatType.CSV)
         .result(Settings.resultFile(langCode))
