@@ -20,24 +20,24 @@
 package org.languagetool.rules.en;
 
 import org.languagetool.Languages;
-import org.languagetool.rules.AbstractDashRule;
+import org.languagetool.rules.AbstractDashRule2;
 import org.languagetool.rules.Example;
-import org.languagetool.rules.patterns.PatternRule;
+import scala.collection.immutable.Map;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Check for compounds written with dashes instead of hyphens.
  * @since 3.8
  */
-public class EnglishDashRule extends AbstractDashRule {
+public class EnglishDashRule extends AbstractDashRule2 {
+  private static final String message = "A dash was used instead of a hyphen. Did you mean: ";
 
-  private static final List<PatternRule> dashRules = loadCompoundFile("/en/compounds.txt",
-          "A dash was used instead of a hyphen. Did you mean: ", Languages.getLanguageForShortCode("en"));
+  private static final Map<String, String> dashRules = loadCompoundFile("/en/compounds.txt",
+                   message, Languages.getLanguageForShortCode("en"));
 
   public EnglishDashRule() throws IOException {
-    super(dashRules);
+    super(dashRules, message);
     addExamplePair(Example.wrong("I'll buy a new <marker>T—shirt</marker>."),
                    Example.fixed("I'll buy a new <marker>T-shirt</marker>."));
   }
