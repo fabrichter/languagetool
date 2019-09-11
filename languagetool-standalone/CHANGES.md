@@ -34,6 +34,13 @@
     (except for Catalan and Polish; for German removing compounds
     in `removed.txt` might not work) (#884)
   
+#### Technical
+  * The languages to load are now determined via reflection instead of being read from META-INF/org/languagetool/language-module.properties.
+    All built-in languages are automatically loaded 
+    (specifically, all subclasses of org.languagetool.Language with the package prefix org.languagetool and a public constructor with no parameters qualify).
+    If you want to use other classes as well, use Languages.addLanguage(Language).
+    Restricting the supported languages is no longer supported.
+    
   
 
 ## 4.6 (2019-06-26)

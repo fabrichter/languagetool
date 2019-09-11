@@ -18,19 +18,6 @@
             <outputDirectory>third-party-licenses</outputDirectory>
         </fileSet>
     </fileSets>
-    <containerDescriptorHandlers>
-        <!-- both of these handlers are needed so all language-module.properties get merged into one file: -->
-        <containerDescriptorHandler>
-            <handlerName>metaInf-services</handlerName>
-        </containerDescriptorHandler>
-        <containerDescriptorHandler>
-            <handlerName>file-aggregator</handlerName>
-            <configuration>
-                <filePattern>META-INF/org/languagetool/language-module.properties</filePattern>
-                <outputPath>LanguageTool-wikipedia-${project.version}/META-INF/org/languagetool/language-module.properties</outputPath>
-            </configuration>
-        </containerDescriptorHandler>
-    </containerDescriptorHandlers>
     <dependencySets>
         <dependencySet>
             <unpack>false</unpack>

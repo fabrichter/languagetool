@@ -43,11 +43,8 @@ import java.util.regex.Pattern;
 
 /**
  * Base class for any supported language (English, German, etc). Language classes
- * are detected at runtime by searching the classpath for files named
- * {@code META-INF/org/languagetool/language-module.properties}. Those file(s)
- * need to contain a key {@code languageClasses} which specifies the fully qualified
- * class name(s), e.g. {@code org.languagetool.language.English}. Use commas to specify 
- * more than one class.
+ * are detected at runtime by searching the classpath for subclasses of this class in
+ * {@link org.languagetool} and subpackages that have a public constructor with no parameters.
  *
  * <p>Sub classes should typically use lazy init for anything that's costly to set up.
  * This improves start up time for the LanguageTool stand-alone version.

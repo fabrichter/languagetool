@@ -24,14 +24,11 @@ import org.languagetool.noop.NoopLanguage;
 import org.languagetool.rules.Rule;
 import org.languagetool.rules.patterns.AbstractPatternRule;
 import org.languagetool.rules.spelling.morfologik.MorfologikSpellerRule;
-import org.languagetool.tools.MultiKeyProperties;
 import org.languagetool.tools.StringTools;
+import org.reflections.Reflections;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,14 +40,41 @@ import java.util.stream.Stream;
  */
 public final class Languages {
 
-  private static final String PROPERTIES_PATH = "META-INF/org/languagetool/language-module.properties";
-  private static final String PROPERTIES_KEY = "languageClasses";
   private static final Language NOOP_LANGUAGE = new NoopLanguage();
 
-  private static final List<Language> languages = getAllLanguages();
+  private static final List<Language> languages = new ArrayList<>(getAllLanguages());
   private static final List<Language> dynLanguages = new ArrayList<>();
   
   private Languages() {
+  }
+
+  private static List<Language> getAllLanguages() {
+    Reflections reflections = new Reflections("org.languagetool");
+    Set<Class<? extends Language>> languages = reflections.getSubTypesOf(Language.class);
+
+    return languages.stream().map(languageClass -> {
+      try {
+        return (Language) languageClass.getConstructor().newInstance();
+      } catch (NoSuchMethodException e) {
+        return null;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }).filter(Objects::nonNull).collect(Collectors.toList());
+  }
+
+  /**
+   * Adds the language to the list of supported languages.
+   * By default, languages are loaded via reflection:
+   * all subclasses of {@link Language} in {@link org.languagetool} and subpackages qualify
+   * a public constructor without any parameters is required as well
+   * This method can be used to add further languages
+   * @since 4.7
+   * @param language the language to add
+   */
+  @Experimental
+  public static void addLanguage(Language language) {
+    languages.add(language);
   }
 
   /**
@@ -110,11 +134,9 @@ public final class Languages {
   }
   
   /**
-   * Language classes are detected at runtime by searching the classpath for files named
-   * {@code META-INF/org/languagetool/language-module.properties}. Those file(s)
-   * need to contain a key {@code languageClasses} which specifies the fully qualified
-   * class name(s), e.g. {@code org.languagetool.language.English}. Use commas to specify
-   * more than one class.
+   * By default, languages are loaded via reflection:
+   * All subclasses of {@link Language} in {@link org.languagetool} and subpackages qualify.
+   * A public constructor without any parameters is required as well.
    * @return an unmodifiable list of all supported languages
    */
   public static List<Language> get() {
@@ -138,54 +160,6 @@ public final class Languages {
 
   private static List<Language> getStaticAndDynamicLanguages() {
     return Stream.concat(languages.stream(), dynLanguages.stream()).collect(Collectors.toList());
-  }
-
-  private static List<Language> getAllLanguages() {
-    List<Language> languages = new ArrayList<>();
-    Set<String> languageClassNames = new HashSet<>();
-    try {
-      Enumeration<URL> propertyFiles = Language.class.getClassLoader().getResources(PROPERTIES_PATH);
-      while (propertyFiles.hasMoreElements()) {
-        URL url = propertyFiles.nextElement();
-        try (InputStream inputStream = url.openStream()) {
-          // We want to be able to read properties file with duplicate key, as produced by
-          // Maven when merging files:
-          MultiKeyProperties props = new MultiKeyProperties(inputStream);
-          List<String> classNamesStr = props.getProperty(PROPERTIES_KEY);
-          if (classNamesStr == null) {
-            throw new RuntimeException("Key '" + PROPERTIES_KEY + "' not found in " + url);
-          }
-          for (String classNames : classNamesStr) {
-            String[] classNamesSplit = classNames.split("\\s*,\\s*");
-            for (String className : classNamesSplit) {
-              if (languageClassNames.contains(className)) {
-                // avoid duplicates - this way we are robust against problems with the maven assembly
-                // plugin which aggregates files more than once (in case the deployment descriptor
-                // contains both <format>zip</format> and <format>dir</format>):
-                continue;
-              }
-              languages.add(createLanguageObjects(url, className));
-              languageClassNames.add(className);
-            }
-          }
-        }
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    return Collections.unmodifiableList(languages);
-  }
-
-  private static Language createLanguageObjects(URL url, String className) {
-    try {
-      Class<?> aClass = Class.forName(className);
-      Constructor<?> constructor = aClass.getConstructor();
-      return (Language) constructor.newInstance();
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("Class '" + className + "' specified in " + url + " could not be found in classpath", e);
-    } catch (Exception e) {
-      throw new RuntimeException("Object for class '" + className + "' specified in " + url + " could not be created", e);
-    }
   }
 
   /**
@@ -234,8 +208,7 @@ public final class Languages {
         }
         Collections.sort(codes);
         throw new IllegalArgumentException("'" + langCode + "' is not a language code known to LanguageTool." +
-                " Supported language codes are: " + String.join(", ", codes) + ". The list of languages is read from " + PROPERTIES_PATH +
-                " in the Java classpath. See http://wiki.languagetool.org/java-api for details.");
+                " Supported language codes are: " + String.join(", ", codes) + ". See http://wiki.languagetool.org/java-api for details.");
       }
     }
     return language;

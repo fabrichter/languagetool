@@ -35,21 +35,5 @@
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
-
-    <!-- as found in standalone's zip.xml -->
-
-    <containerDescriptorHandlers>
-        <!-- both of these handlers are needed so all language-module.properties get merged into one file: -->
-        <containerDescriptorHandler>
-            <handlerName>metaInf-services</handlerName>
-        </containerDescriptorHandler>
-        <containerDescriptorHandler>
-            <handlerName>file-aggregator</handlerName>
-            <configuration>
-                <filePattern>META-INF/org/languagetool/language-module.properties</filePattern>
-                <outputPath>META-INF/org/languagetool/language-module.properties</outputPath>
-            </configuration>
-        </containerDescriptorHandler>
-    </containerDescriptorHandlers>
 </assembly>
 

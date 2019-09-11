@@ -30,19 +30,6 @@
             </includes>
         </fileSet>
     </fileSets>
-    <containerDescriptorHandlers>
-        <!-- both of these handlers are needed so all language-module.properties get merged into one file: -->
-        <containerDescriptorHandler>
-            <handlerName>metaInf-services</handlerName>
-        </containerDescriptorHandler>
-        <containerDescriptorHandler>
-            <handlerName>file-aggregator</handlerName>
-            <configuration>
-                <filePattern>META-INF/org/languagetool/language-module.properties</filePattern>
-                <outputPath>LanguageTool-${project.version}/META-INF/org/languagetool/language-module.properties</outputPath>
-            </configuration>
-        </containerDescriptorHandler>
-    </containerDescriptorHandlers>
     <dependencySets>
         <dependencySet>
             <unpack>false</unpack>
