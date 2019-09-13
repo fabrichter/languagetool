@@ -179,14 +179,12 @@
             <groupId>net.loomchild</groupId>
             <artifactId>segment</artifactId>
             <version>2.0.1</version>
-<!--
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
--->
         </dependency>
         <dependency>
             <groupId>com.optimaize.languagedetector</groupId>
@@ -313,6 +311,10 @@
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
                     <artifactId>scala-library</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-reflect</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

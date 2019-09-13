@@ -31,13 +31,18 @@ import scala.io.Source
 /**
  * Another use of the compounds file -- check for compounds written with
  * dashes instead of hyphens (for example, Rabka — Zdrój).
- * NOTE: this slows down checking a lot when used with large compound lists
+ *
+ * Optimised version, benchmark results:
+ *
+ * Benchmark               (languageCode)       (ruleID)  Mode  Cnt     Score     Error  Units
+ * RuleBenchmark.testRule           en-US   EN_DASH_RULE  avgt    6  2176.915 ± 673.174  ms/op
+ * RuleBenchmark.testRule           en-US  EN_DASH_RULE2  avgt    6     6.441 ±   0.878  ms/op
  *
  * @since 3.8
  */
 object AbstractDashRule2 {
   private val dashChars = List("—", "–")
-  private val dashes = dashChars ++ dashChars.map(dash => s" $dash ")
+  private val dashes = dashChars ++ dashChars.flatMap(dash => s" $dash " :: s" $dash" :: s"$dash " :: Nil)
   private val hyphen = "-"
 
   protected def dashVariations(parts: List[String]): List[String] = {

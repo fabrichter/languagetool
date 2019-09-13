@@ -148,6 +148,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- needed by jmh in languagetool-benchmark in newer version, excluded here because of dependency convergence -->
+        <dependency>
+            <groupId>net.sf.jopt-simple</groupId>
+            <artifactId>jopt-simple</artifactId>
+            <version>4.6</version>
+        </dependency>
         <dependency>
             <groupId>org.sweble.wikitext</groupId>
             <artifactId>swc-parser-lazy</artifactId>
@@ -156,6 +162,10 @@
                 <exclusion>
                     <groupId>junit</groupId>
                     <artifactId>junit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.sf.jopt-simple</groupId>
+                    <artifactId>jopt-simple</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-io</groupId>
