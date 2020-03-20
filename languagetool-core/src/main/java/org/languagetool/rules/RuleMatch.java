@@ -147,8 +147,21 @@ public class RuleMatch implements Comparable<RuleMatch> {
     this.sentence = sentence;
   }
 
+  /**
+   * clone
+   * @param clone match to clone
+   */
   public RuleMatch(RuleMatch clone) {
-    this(clone.getRule(), clone.getSentence(), clone.getFromPos(), clone.getToPos(), clone.getMessage(), clone.getShortMessage());
+    this(clone, clone.getMessage(), clone.getShortMessage());
+  }
+
+  /**
+   * clone with modified message
+   * @param clone match to clone
+   * @since 4.9
+   */
+  public RuleMatch(RuleMatch clone, String message, String shortMessage) {
+    this(clone.getRule(), clone.getSentence(), clone.getFromPos(), clone.getToPos(), message, shortMessage);
     this.setSuggestedReplacementObjects(clone.getSuggestedReplacementObjects());
     this.setAutoCorrect(clone.isAutoCorrect());
     this.setFeatures(clone.getFeatures());

@@ -31,6 +31,7 @@ import org.languagetool.chunking.Chunker;
 import org.languagetool.chunking.EnglishChunker;
 import org.languagetool.languagemodel.LanguageModel;
 import org.languagetool.rules.*;
+import org.languagetool.rules.confusion.RemoteConfusionPairRule;
 import org.languagetool.rules.en.*;
 import org.languagetool.rules.neuralnetwork.NeuralNetworkRuleCreator;
 import org.languagetool.rules.neuralnetwork.Word2VecModel;
@@ -285,6 +286,8 @@ public class English extends Language implements AutoCloseable {
       case "TRANSLATION_RULE":          return 5;   // Premium
       case "WRONG_APOSTROPHE":          return 5;
       case "DOS_AND_DONTS":             return 2;
+      // for testing, because there could be overlap with XML rules, old confusion rule
+      case RemoteConfusionPairRule.RULE_ID: return 1;
       case "EN_COMPOUNDS":              return 1;
       case "APOSTROPHE_VS_QUOTE":       return 1;   // higher prio than EN_QUOTES
       case "COMMA_PERIOD":              return 1;   // higher prio than COMMA_PARENTHESIS_WHITESPACE
@@ -353,6 +356,26 @@ public class English extends Language implements AutoCloseable {
     return super.getPriorityForId(id);
   }
 
+  @Override
+  public List<Rule> getRelevantRemoteRules(ResourceBundle messageBundle, List<RemoteRuleConfig> configs, GlobalConfig globalConfig, UserConfig userConfig, Language motherTongue, List<Language> altLanguages) throws IOException {
+    List<Rule> rules = new ArrayList<>(super.getRelevantRemoteRules(messageBundle, configs, globalConfig, userConfig, motherTongue, altLanguages));
+
+    RemoteRuleConfig confpair = RemoteRuleConfig.getRelevantConfig(RemoteConfusionPairRule.RULE_ID, configs);
+    if (confpair != null) {
+      rules.add(new RemoteConfusionPairRule(messageBundle, confpair, userConfig) {
+        @Override
+        public String getId() {
+          return RemoteConfusionPairRule.RULE_ID;
+        }
+
+        @Override
+        public String getDescription() {
+          return "Uses machine learning to detect commonly confused words";
+        }
+      });
+    }
+    return rules;
+  }
 
   @Override
   public Function<Rule, Rule> getRemoteEnhancedRules(ResourceBundle messageBundle, List<RemoteRuleConfig> configs, UserConfig userConfig, Language motherTongue, List<Language> altLanguages) throws IOException {

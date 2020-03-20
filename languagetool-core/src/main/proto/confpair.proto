@@ -1,0 +1,35 @@
+syntax = "proto3";
+package confpair;
+option java_package = "org.languagetool.rules.confusion";
+option java_outer_classname = "ConfPairProto";
+
+
+service ConfPair {
+    rpc EvalBatch (BatchRequest) returns (BatchResponse);
+}
+
+message BatchRequest {
+    repeated Request requests = 1;
+}
+message Request {
+    string text = 1;
+    repeated Candidate candidates = 2;
+}
+
+message Candidate {
+   uint32 offset = 1;
+   uint32 length = 2;
+}
+
+message BatchResponse {
+   repeated Response responses = 1;
+}
+message Response {
+    repeated Match matches = 1;
+}
+message Match {
+    uint32 offset = 1;
+    uint32 length = 2;
+    repeated string replacements = 3;
+}
+

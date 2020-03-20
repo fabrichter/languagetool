@@ -20,11 +20,7 @@ package org.languagetool.rules.de;
 
 import com.hankcs.algorithm.AhoCorasickDoubleArrayTrie;
 import org.jetbrains.annotations.Nullable;
-import org.languagetool.AnalyzedSentence;
-import org.languagetool.AnalyzedTokenReadings;
-import org.languagetool.JLanguageTool;
-import org.languagetool.LinguServices;
-import org.languagetool.UserConfig;
+import org.languagetool.*;
 import org.languagetool.databroker.ResourceDataBroker;
 import org.languagetool.language.GermanyGerman;
 import org.languagetool.languagemodel.BaseLanguageModel;
@@ -175,6 +171,7 @@ public class ProhibitedCompoundRule extends Rule {
     prohibitedCompoundRuleSearcher = setupAhoCorasickSearch(pairs, pairMap);
     prohibitedCompoundRulePairMap = pairMap;
   }
+
 
   private static void addAllCaseVariants(List<Pair> candidatePairs, Pair lcPair) {
     candidatePairs.add(new Pair(lcPair.part1, lcPair.part1Desc, lcPair.part2, lcPair.part2Desc));
