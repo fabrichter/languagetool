@@ -394,8 +394,8 @@ public class English extends Language implements AutoCloseable {
     if (missingTheConfig != null) {
       Map<String, String> missingTheMessages = new HashMap<>();
       missingTheMessages.put("MISSING_THE", insMessage);
-      Rule missingTheRule = GRPCRule.create(missingTheConfig, missingTheID,
-                                            missingTheDescription, missingTheMessages);
+      Rule missingTheRule = new MissingArticlesRule(messageBundle, missingTheConfig, missingTheID,
+                                                    missingTheDescription, missingTheMessages);
       rules.add(missingTheRule);
     }
     List<String> confpairRules = Arrays.asList("AI_CONFPAIRS_EN_GPT2", "AI_CONFPAIRS_EN_GPT2_L", "AI_CONFPAIRS_EN_GPT2_XL");

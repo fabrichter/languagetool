@@ -193,6 +193,9 @@ public abstract class GRPCRule extends RemoteRule {
     return () -> {
       MLRuleRequest req = (MLRuleRequest) request;
 
+      if (req.sentences.isEmpty()) {
+        return new RemoteRuleResult(false, Collections.emptyList());
+      }
       MLServerProto.MatchResponse response = conn.stub.match(req.request);
       Map<AnalyzedSentence, Integer> offsets = new HashMap<>();
       int offset = 0;
