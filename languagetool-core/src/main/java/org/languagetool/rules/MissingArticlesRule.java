@@ -20,14 +20,6 @@
  */
 package org.languagetool.rules;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.stream.Collectors;
-
 import org.languagetool.AnalyzedSentence;
 import org.languagetool.AnalyzedTokenReadings;
 import org.languagetool.JLanguageTool;
@@ -35,6 +27,14 @@ import org.languagetool.Languages;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.rules.ml.MLServerProto;
 import org.languagetool.rules.ml.MLServerProto.Match;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class MissingArticlesRule extends GRPCRule {
 
@@ -74,7 +74,14 @@ public class MissingArticlesRule extends GRPCRule {
   @Override
   protected RemoteRule.RemoteRequest prepareRequest(List<AnalyzedSentence> sentences, AnnotatedText annotatedText) {
     List<String> text = sentences.stream().filter(MissingArticlesRule::isCandidate).map(AnalyzedSentence::getText).collect(Collectors.toList());
+    System.out.printf("Filtered sentences: %s -> %s%n.",
+      sentences.stream().map(AnalyzedSentence::getText).collect(Collectors.joining(" | ")),
+      String.join(" | ", text));
     MLServerProto.MatchRequest req = MLServerProto.MatchRequest.newBuilder().addAllSentences(text).build();
+    // TODO: this doesn't work; executeRequest right now needs all sentences to compute offets
+    //  (fixed in remoteRuleOffsets branch, which has other issues)
+    // but req.sentences and  sentences need to be aligned as well
+    // if offset computation is outside of remote rule, we can just pass the filtered sentences here as well and everything should work
     return new MLRuleRequest(req, sentences);
   }
 
