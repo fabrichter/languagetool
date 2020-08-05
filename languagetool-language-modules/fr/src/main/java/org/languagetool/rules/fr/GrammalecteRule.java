@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.languagetool.AnalyzedSentence;
 import org.languagetool.GlobalConfig;
-import org.languagetool.rules.Rule;
-import org.languagetool.rules.RuleMatch;
+import org.languagetool.markup.AnnotatedText;
+import org.languagetool.rules.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,18 +36,21 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 /**
  * Queries a local Grammalecte server.
  * @since 4.6
  */
-public class GrammalecteRule extends Rule {
+public class GrammalecteRule extends RemoteRule {
 
+  public static final String RULE_ID = "FR_GRAMMALECTE";
   private static Logger logger = LoggerFactory.getLogger(GrammalecteRule.class);
   private static final int TIMEOUT_MILLIS = 500;
+  private static final float TIME_PER_CHAR_MILLIS = 0.5f;
+  private static final int FALL = 3;
   private static final long DOWN_INTERVAL_MILLISECONDS = 5000;
-
-  private static long lastRequestError = 0;
 
   private final ObjectMapper mapper = new ObjectMapper();
   private final GlobalConfig globalConfig;
@@ -99,15 +102,81 @@ public class GrammalecteRule extends Rule {
   ));
 
   public GrammalecteRule(ResourceBundle messages, GlobalConfig globalConfig) {
-    super(messages);
+    super(messages, new RemoteRuleConfig(
+      RULE_ID, globalConfig.getGrammalecteServer(), null,
+      0, TIMEOUT_MILLIS * 2L, 0f,
+      FALL, DOWN_INTERVAL_MILLISECONDS,
+      Collections.emptyMap()), false);
     //addExamplePair(Example.wrong(""),
     //               Example.fixed(""));
     this.globalConfig = globalConfig;
   }
 
+  class GrammalecteRequest extends RemoteRequest {
+    private final List<AnalyzedSentence> sentences;
+    private final String text;
+
+    GrammalecteRequest(List<AnalyzedSentence> sentences) {
+      this.sentences = sentences;
+      text = sentences.stream().map(AnalyzedSentence::getText).collect(Collectors.joining());
+    }
+  }
+
+  @Override
+  protected RemoteRequest prepareRequest(List<AnalyzedSentence> sentences, AnnotatedText annotatedText) {
+    return new GrammalecteRequest(sentences);
+  }
+
+  @Override
+  protected Callable<RemoteRuleResult> executeRequest(RemoteRequest request) {
+    GrammalecteRequest req = (GrammalecteRequest) request;
+    return () -> {
+      HttpURLConnection huc = null;
+      URL serverUrl = null;
+      try {
+        serverUrl = new URL(globalConfig.getGrammalecteServer());
+        huc = (HttpURLConnection) serverUrl.openConnection();
+        HttpURLConnection.setFollowRedirects(false);
+        huc.setConnectTimeout(TIMEOUT_MILLIS);
+        huc.setReadTimeout(TIMEOUT_MILLIS * 2);
+        if (globalConfig.getGrammalecteUser() != null && globalConfig.getGrammalectePassword() != null) {
+          String authString = globalConfig.getGrammalecteUser() + ":" + globalConfig.getGrammalectePassword();
+          String encoded = Base64.getEncoder().encodeToString(authString.getBytes());
+          huc.setRequestProperty("Authorization", "Basic " + encoded);
+        }
+        huc.setRequestMethod("POST");
+        huc.setDoOutput(true);
+        huc.connect();
+        try (DataOutputStream wr = new DataOutputStream(huc.getOutputStream())) {
+          String urlParameters = "text=" + encode(req.text);
+          byte[] postData = urlParameters.getBytes(StandardCharsets.UTF_8);
+          wr.write(postData);
+        }
+        InputStream input = huc.getInputStream();
+        List<RuleMatch> ruleMatches = parseJson(input, req.sentences);
+        return new RemoteRuleResult(true, true, ruleMatches);
+      } catch (Exception e) {
+        // These are issue that can be request-specific, like wrong parameters. We don't throw an
+        // exception, as the calling code would otherwise assume this is a persistent error:
+        logger.warn("Warn: Failed to query Grammalecte server at " + serverUrl + ": " + e.getClass() + ": " + e.getMessage());
+        e.printStackTrace();
+      } finally {
+        if (huc != null) {
+          huc.disconnect();
+        }
+      }
+      return new RemoteRuleResult(true, false, Collections.emptyList());
+    };
+  }
+
+  @Override
+  protected RemoteRuleResult fallbackResults(RemoteRequest request) {
+    return new RemoteRuleResult(false, false, Collections.emptyList());
+  }
+
   @Override
   public String getId() {
-    return "FR_GRAMMALECTE";
+    return RULE_ID;
   }
 
   @Override
@@ -115,55 +184,21 @@ public class GrammalecteRule extends Rule {
     return "Returns matches of a local Grammalecte server";
   }
 
-  @Override
-  public RuleMatch[] match(AnalyzedSentence sentence) throws IOException {
-    // very basic health check -> mark server as down after an error for given interval
-    if (System.currentTimeMillis() - lastRequestError < DOWN_INTERVAL_MILLISECONDS) {
-      logger.warn("Warn: Temporarily disabled Grammalecte server because of recent error.");
-      return new RuleMatch[0];
-    }
-
-    URL serverUrl = new URL(globalConfig.getGrammalecteServer());
-    HttpURLConnection huc = (HttpURLConnection) serverUrl.openConnection();
-    HttpURLConnection.setFollowRedirects(false);
-    huc.setConnectTimeout(TIMEOUT_MILLIS);
-    huc.setReadTimeout(TIMEOUT_MILLIS*2);
-    if (globalConfig.getGrammalecteUser() != null && globalConfig.getGrammalectePassword() != null) {
-      String authString = globalConfig.getGrammalecteUser() + ":" + globalConfig.getGrammalectePassword();
-      String encoded = Base64.getEncoder().encodeToString(authString.getBytes());
-      huc.setRequestProperty("Authorization", "Basic " + encoded);
-    }
-    huc.setRequestMethod("POST");
-    huc.setDoOutput(true);
-    try {
-      huc.connect();
-      try (DataOutputStream wr = new DataOutputStream(huc.getOutputStream())) {
-        String urlParameters = "text=" + encode(sentence.getText());
-        byte[] postData = urlParameters.getBytes(StandardCharsets.UTF_8);
-        wr.write(postData);
-      }
-      InputStream input = huc.getInputStream();
-      List<RuleMatch> ruleMatches = parseJson(input);
-      return toRuleMatchArray(ruleMatches);
-    } catch (Exception e) {
-      lastRequestError = System.currentTimeMillis();
-      // These are issue that can be request-specific, like wrong parameters. We don't throw an
-      // exception, as the calling code would otherwise assume this is a persistent error:
-      logger.warn("Warn: Failed to query Grammalecte server at " + serverUrl + ": " + e.getClass() + ": " + e.getMessage());
-      e.printStackTrace();
-    } finally {
-      huc.disconnect();
-    }
-    return new RuleMatch[0];
-  }
-
   @NotNull
-  private List<RuleMatch> parseJson(InputStream inputStream) throws IOException {
+  private List<RuleMatch> parseJson(InputStream inputStream, List<AnalyzedSentence> sentences) throws IOException {
     Map map = mapper.readValue(inputStream, Map.class);
     List matches = (ArrayList) map.get("data");
     List<RuleMatch> result = new ArrayList<>();
+    int[] offsets = new int[sentences.size()];
+    int offset = 0;
+    for (int i = 0; i < sentences.size(); i++) {
+      offsets[i] = offset;
+      // should this use getCorrectedTextLength()? probably not
+      offset += sentences.get(i).getText().length();
+      //offset += sentences.get(i).getCorrectedTextLength()
+    }
     for (Object match : matches) {
-      List<RuleMatch> remoteMatches = getMatches((Map<String, Object>)match);
+      List<RuleMatch> remoteMatches = getMatches((Map<String, Object>)match, sentences, offsets);
       result.addAll(remoteMatches);
     }
     return result;
@@ -174,20 +209,32 @@ public class GrammalecteRule extends Rule {
   }
 
   @NotNull
-  private List<RuleMatch> getMatches(Map<String, Object> match) {
+  private List<RuleMatch> getMatches(Map<String, Object> match, List<AnalyzedSentence> sentences, int[] offsets) {
     List<RuleMatch> remoteMatches = new ArrayList<>();
     ArrayList matches = (ArrayList) match.get("lGrammarErrors");
     for (Object o : matches) {
       Map pairs = (Map) o;
-      int offset = (int) pairs.get("nStart");
-      int endOffset = (int)pairs.get("nEnd");
       String id = (String)pairs.get("sRuleId");
       if (ignoreRules.contains(id)) {
         continue;
       }
+      // offsets are for whole text, but we need offsets relative to the current sentence
+      int absoluteOffset = (int) pairs.get("nStart");
+      int absoluteEndOffset = (int)pairs.get("nEnd");
+      int shift = 0;
+      AnalyzedSentence sentence = null;
+      for (int i = 0; i < offsets.length; i++) {
+        int newShift = shift + offsets[i];
+        sentence = sentences.get(i);
+        if (absoluteOffset - newShift < 0) {
+          break;
+        }
+        shift = newShift;
+      }
+      int offset = absoluteOffset - shift, endOffset = absoluteEndOffset - shift;
       String message = pairs.get("sMessage").toString();
       GrammalecteInternalRule rule = new GrammalecteInternalRule("grammalecte_" + id, message);
-      RuleMatch extMatch = new RuleMatch(rule, null, offset, endOffset, message);
+      RuleMatch extMatch = new RuleMatch(rule, sentence, offset, endOffset, message);
       List<String> suggestions = (List<String>) pairs.get("aSuggestions");
       //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss ZZZZ");
       //System.out.println(sdf.format(new Date()) + " Grammalecte: " + pairs.get("sRuleId") + "; " + pairs.get("sMessage") + " => " + suggestions);

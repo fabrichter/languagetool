@@ -107,16 +107,19 @@ public abstract class RemoteRule extends Rule {
           }
           future.cancel(true);
 
-          if (result.isRemote()) { // don't reset failures if no remote call took place
+          if (result.isRemote() && result.isSuccess()) { // don't reset failures if no remote call took place
             consecutiveFailures.get(ruleId).set(0);
             RemoteRuleMetrics.failures(ruleId, 0);
           }
 
           RemoteRuleMetrics.RequestResult requestResult = result.isRemote() ?
-            RemoteRuleMetrics.RequestResult.SUCCESS : RemoteRuleMetrics.RequestResult.SKIPPED;
+            result.isSuccess() ? RemoteRuleMetrics.RequestResult.SUCCESS : RemoteRuleMetrics.RequestResult.ERROR :
+            RemoteRuleMetrics.RequestResult.SKIPPED;
           RemoteRuleMetrics.request(ruleId, i, System.nanoTime() - startTime, characters, requestResult);
 
-          return result;
+          if (result.isSuccess()) {
+            return result;
+          }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
           logger.warn("Error while fetching results for remote rule " + ruleId + ", tried " + (i + 1) + " times, timeout: " + timeout + "ms" , e);
 

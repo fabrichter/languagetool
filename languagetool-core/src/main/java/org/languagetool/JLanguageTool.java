@@ -1015,6 +1015,8 @@ public class JLanguageTool {
     for (int i = 0; i < analyzedSentences.size(); i++) {
       AnalyzedSentence s = analyzedSentences.get(i);
       matchOffset.put(i, offset);
+      // TODO: check if using getCorrectedTextLength is correct here (e.g. for soft hyphen bugs)
+      //offset += s.getCorrectedTextLength();
       offset += s.getText().length();
       InputSentence cacheKey = new InputSentence(s.getText(), language, motherTongue,
         disabledRules, disabledRuleCategories, enabledRules, enabledRuleCategories,
