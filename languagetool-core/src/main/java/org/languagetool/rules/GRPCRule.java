@@ -113,13 +113,11 @@ public abstract class GRPCRule extends RemoteRule {
 
   }
 
-  static class Connection {
+  public static class Connection {
     final ManagedChannel channel;
     final MLServerGrpc.MLServerBlockingStub stub;
 
-    private ManagedChannel getChannel(String host, int port, boolean useSSL,
-                                      @Nullable String clientPrivateKey, @Nullable  String clientCertificate,
-                                      @Nullable String rootCertificate) throws SSLException {
+    public static ManagedChannel getManagedChannel(String host, int port, boolean useSSL, @Nullable String clientPrivateKey, @Nullable String clientCertificate, @Nullable String rootCertificate) throws SSLException {
       NettyChannelBuilder channelBuilder = NettyChannelBuilder.forAddress(host, port);
       if (useSSL) {
         SslContextBuilder sslContextBuilder = GrpcSslContexts.forClient();
@@ -143,7 +141,7 @@ public abstract class GRPCRule extends RemoteRule {
       String key = serviceConfiguration.getOptions().get("clientKey");
       String cert = serviceConfiguration.getOptions().get("clientCertificate");
       String ca = serviceConfiguration.getOptions().get("rootCertificate");
-      this.channel = getChannel(host, port, ssl, key, cert, ca);
+      this.channel = getManagedChannel(host, port, ssl, key, cert, ca);
       this.stub = MLServerGrpc.newBlockingStub(channel);
 
     }

@@ -34,13 +34,13 @@ import org.languagetool.languagemodel.bert.grpc.BertLmGrpc;
 import org.languagetool.languagemodel.bert.grpc.BertLmGrpc.BertLmBlockingStub;
 
 import javax.net.ssl.SSLException;
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static org.languagetool.languagemodel.bert.grpc.BertLmProto.*;
+import static org.languagetool.rules.GRPCRule.Connection.getManagedChannel;
 
 public class RemoteLanguageModel {
 
@@ -101,20 +101,7 @@ public class RemoteLanguageModel {
   private ManagedChannel getChannel(String host, int port, boolean useSSL,
                     @Nullable String clientPrivateKey, @Nullable  String clientCertificate,
                     @Nullable String rootCertificate) throws SSLException {
-    NettyChannelBuilder channelBuilder = NettyChannelBuilder.forAddress(host, port);
-    if (useSSL) {
-      SslContextBuilder sslContextBuilder = GrpcSslContexts.forClient();
-      if (rootCertificate != null) {
-        sslContextBuilder.trustManager(new File(rootCertificate));
-      }
-      if (clientCertificate != null && clientPrivateKey != null) {
-        sslContextBuilder.keyManager(new File(clientCertificate), new File(clientPrivateKey));
-      }
-      channelBuilder = channelBuilder.negotiationType(NegotiationType.TLS).sslContext(sslContextBuilder.build());
-    } else {
-      channelBuilder = channelBuilder.usePlaintext();
-    }
-    return channelBuilder.build();
+    return getManagedChannel(host, port, useSSL, clientPrivateKey, clientCertificate, rootCertificate);
   }
 
   public void shutdown() {
