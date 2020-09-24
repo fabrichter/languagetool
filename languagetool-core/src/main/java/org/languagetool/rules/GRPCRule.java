@@ -44,7 +44,10 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLException;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -127,6 +130,7 @@ public abstract class GRPCRule extends RemoteRule {
         if (clientCertificate != null && clientPrivateKey != null) {
           sslContextBuilder.keyManager(new File(clientCertificate), new File(clientPrivateKey));
         }
+        //sslContextBuilder.sslProvider(SslProvider.OPENSSL);
         channelBuilder = channelBuilder.negotiationType(NegotiationType.TLS).sslContext(sslContextBuilder.build());
       } else {
         channelBuilder = channelBuilder.usePlaintext();

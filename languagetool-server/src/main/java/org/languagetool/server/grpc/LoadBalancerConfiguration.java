@@ -24,6 +24,9 @@ package org.languagetool.server.grpc;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,25 +41,32 @@ import java.util.stream.Stream;
 class LoadBalancerConfiguration {
   private static final Logger logger = LoggerFactory.getLogger(LoadBalancerConfiguration.class);
 
+  private final String name;
   private final int port;
   private final int batchSize;
   private final int queueTimeoutMilliseconds;
   private final int healthCheckIntervalMilliseconds;
   private final String host;
   private final Path backendServersFile;
-  private List<LBEntry> backendServersList;
   private final int threads;
+  @Nullable
   private final String clientKey;
+  @Nullable
   private final String clientCertificate;
+  @Nullable
   private final String CACertificate;
-
+  private final boolean ssl;
+  private final File certificate;
+  private final File privateKey;
   private final List<Runnable> backendChangeListeners = new LinkedList<>();
-
+  private List<LBEntry> backendServersList;
   LoadBalancerConfiguration(File path) throws IOException {
     Properties props = new Properties();
     try (FileInputStream fis = new FileInputStream(path)) {
       props.load(fis);
     }
+    name = Objects.requireNonNull(props.getProperty("name"),
+      "Missing configuration setting: name");
 
     port = Integer.parseInt(Objects.requireNonNull(props.getProperty("port"),
       "Missing configuration setting: port"));
@@ -77,12 +87,23 @@ class LoadBalancerConfiguration {
     host = Objects.requireNonNull(props.getProperty("host"),
       "Missing configuration setting: host");
 
-    clientKey = Objects.requireNonNull(props.getProperty("clientKey"),
-      "Missing configuration setting: clientKey");
-    clientCertificate = Objects.requireNonNull(props.getProperty("clientCertificate"),
-      "Missing configuration setting: clientCertificate");
-    CACertificate = Objects.requireNonNull(props.getProperty("CACertificate"),
-      "Missing configuration setting: CACertificate");
+    clientKey = props.getProperty("clientKey");
+    clientCertificate = props.getProperty("clientCertificate");
+    CACertificate = props.getProperty("CACertificate");
+
+    ssl = Boolean.parseBoolean(props.getProperty("ssl", "false"));
+    if (ssl) {
+      certificate = new File(Objects.requireNonNull(props.getProperty("certificate"),
+        "Missing configuration setting: certificate"));
+      privateKey = new File(Objects.requireNonNull(props.getProperty("privateKey"),
+        "Missing configuration setting: privateKey"));
+      if (!(certificate.isFile() && privateKey.isFile())) {
+        throw new IllegalArgumentException("Couldn't read certificate " + certificate + " and/or privateKey " + privateKey);
+      }
+    } else {
+      certificate = null;
+      privateKey = null;
+    }
 
     backendServersFile = Paths.get(Objects.requireNonNull(props.getProperty("backendServers"),
       "Missing configuration setting: backendServers"));
@@ -96,13 +117,25 @@ class LoadBalancerConfiguration {
     }
     Thread configurationMonitor = new Thread(new ServerConfigurationMonitor());
     configurationMonitor.setDaemon(true);
-    configurationMonitor.setName("grpc-server-configuration-monitor");
+    configurationMonitor.setName("lt-server-configuration-monitor-" + name);
     configurationMonitor.start();
+  }
+
+  public boolean isSsl() {
+    return ssl;
+  }
+
+  public File getCertificate() {
+    return certificate;
+  }
+
+  public File getPrivateKey() {
+    return privateKey;
   }
 
   private void loadServerList() throws IOException {
     try (Stream<String> content = Files.lines(backendServersFile)) {
-      backendServersList = content.map(LBEntry::parse).collect(Collectors.toList());
+      backendServersList = content.filter(LBEntry::filter).map(LBEntry::parse).collect(Collectors.toList());
     }
   }
 
@@ -124,6 +157,10 @@ class LoadBalancerConfiguration {
 
   public String getHost() {
     return host;
+  }
+
+  public String getName() {
+    return name;
   }
 
   public List<LBEntry> getBackendServersList() {
@@ -152,17 +189,27 @@ class LoadBalancerConfiguration {
 
   public static class LBEntry {
     private final String address;
+    private final boolean ssl;
 
     public LBEntry(String address) {
+      this(address, false);
+    }
+
+    public LBEntry(String address, boolean ssl) {
       this.address = address;
+      this.ssl = ssl;
     }
 
     public static LBEntry parse(String line) {
-      return new LBEntry(line);
-    }
-
-    public String getAddress() {
-      return address;
+      String[] parts = line.split(" ", 2);
+      if (parts.length == 1) {
+        return new LBEntry(line);
+      } else if (parts.length == 0) {
+        throw new IllegalArgumentException("Can't parse backend server configuration: '" + line + "'");
+      } else {
+        boolean ssl = parts[1].contains("ssl");
+        return new LBEntry(parts[0], ssl);
+      }
     }
 
     @Override
@@ -178,6 +225,7 @@ class LoadBalancerConfiguration {
       LBEntry lbEntry = (LBEntry) o;
 
       return new EqualsBuilder()
+        .append(ssl, lbEntry.ssl)
         .append(address, lbEntry.address)
         .isEquals();
     }
@@ -186,14 +234,28 @@ class LoadBalancerConfiguration {
     public int hashCode() {
       return new HashCodeBuilder(17, 37)
         .append(address)
+        .append(ssl)
         .toHashCode();
+    }
+
+    public String getAddress() {
+      return address;
+    }
+
+    public boolean isSsl() {
+      return ssl;
     }
 
     @Override
     public String toString() {
-      return "LBEntry{" +
-        "address='" + address + '\'' +
-        '}';
+      return new ToStringBuilder(this, ToStringStyle.NO_CLASS_NAME_STYLE)
+        .append("address", address)
+        .append("ssl", ssl)
+        .toString();
+    }
+
+    public static boolean filter(String line) {
+      return !line.startsWith("#") && !line.trim().isEmpty();
     }
   }
 
