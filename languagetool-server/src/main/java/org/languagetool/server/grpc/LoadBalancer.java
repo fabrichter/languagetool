@@ -151,6 +151,7 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
           MLServerProto.MatchRequest.Builder batchedRequest = MLServerProto.MatchRequest.newBuilder();
           for (QueuedRequest req : batch) {
             batchedRequest.addAllSentences(req.request.getSentencesList());
+            batchedRequest.addAllTextSessionID(req.request.getTextSessionIDList());
             if (!req.request.getInputLogging()) { // only allow logging if all batched requests allow it
               logging = false;
             }
