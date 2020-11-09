@@ -151,7 +151,14 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
           MLServerProto.MatchRequest.Builder batchedRequest = MLServerProto.MatchRequest.newBuilder();
           for (QueuedRequest req : batch) {
             batchedRequest.addAllSentences(req.request.getSentencesList());
-            batchedRequest.addAllTextSessionID(req.request.getTextSessionIDList());
+            List<Long> sessionIDs = req.request.getTextSessionIDList();
+            if (sessionIDs == null || sessionIDs.isEmpty() ||
+                req.request.getTextSessionIDCount() != req.request.getSentencesCount()) {
+              // magic text session ID for same behavior as missing ID
+              // ensure session ID and sentence lists match
+              sessionIDs = Collections.nCopies(req.request.getSentencesCount(), -3L);
+            }
+            batchedRequest.addAllTextSessionID(sessionIDs);
             if (!req.request.getInputLogging()) { // only allow logging if all batched requests allow it
               logging = false;
             }
