@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import org.languagetool.noop.NoopLanguage;
 import org.languagetool.tools.MultiKeyProperties;
 import org.languagetool.tools.StringTools;
+import org.reflections.Reflections;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -45,6 +46,25 @@ public final class Languages {
   private static final List<Language> dynLanguages = new ArrayList<>();
   
   private Languages() {
+  }
+
+  public static List<Language> loadLanguagesFromPackages() {
+    return loadLanguagesFromPackages("org.languagetool");
+  }
+
+  public static List<Language> loadLanguagesFromPackages(String basePackage) {
+    Reflections reflections = new Reflections(basePackage);
+    Set<Class<? extends Language>> languages = reflections.getSubTypesOf(Language.class);
+
+    return languages.stream().map(languageClass -> {
+      try {
+        return (Language) languageClass.getConstructor().newInstance();
+      } catch (NoSuchMethodException e) {
+        return null;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }).filter(Objects::nonNull).collect(Collectors.toList());
   }
 
   /**
