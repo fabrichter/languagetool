@@ -23,6 +23,8 @@ import org.languagetool.noop.NoopLanguage;
 import org.languagetool.tools.MultiKeyProperties;
 import org.languagetool.tools.StringTools;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -37,6 +39,7 @@ import java.util.stream.Stream;
  * @since 2.9
  */
 public final class Languages {
+  private static final Logger logger = LoggerFactory.getLogger(Languages.class);
 
   private static final String PROPERTIES_PATH = "META-INF/org/languagetool/language-module.properties";
   private static final String PROPERTIES_KEY = "languageClasses";
@@ -46,6 +49,18 @@ public final class Languages {
   private static final List<Language> dynLanguages = new ArrayList<>();
   
   private Languages() {
+  }
+
+  static void useLanguagesFromPackages() {
+    Set<Language> currentLanguages = new HashSet<>(Languages.get());
+    List<Language> newLanguages = loadLanguagesFromPackages();
+    List<Language> addedLanguages = new ArrayList<>();
+    for (Language lang : newLanguages) {
+      if (!currentLanguages.contains(lang) && !addedLanguages.contains(lang)) {
+        dynLanguages.add(lang);
+        addedLanguages.add(lang);
+      }
+    }
   }
 
   public static List<Language> loadLanguagesFromPackages() {
@@ -59,7 +74,8 @@ public final class Languages {
     return languages.stream().map(languageClass -> {
       try {
         return (Language) languageClass.getConstructor().newInstance();
-      } catch (NoSuchMethodException e) {
+      } catch (NoSuchMethodException | InstantiationException e) {
+        logger.warn("Could not create language from class {}", languageClass.getName(), e);
         return null;
       } catch (Exception e) {
         throw new RuntimeException(e);

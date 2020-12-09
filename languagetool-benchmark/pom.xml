@@ -4,7 +4,7 @@
     <parent>
     <artifactId>languagetool-parent</artifactId>
     <groupId>org.languagetool</groupId>
-    <version>4.7-SNAPSHOT</version>
+    <version>5.2-SNAPSHOT</version>
   </parent>
 
     <groupId>org.languagetool</groupId>
@@ -34,12 +34,6 @@
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>
             <version>${jmh.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.sf.jopt-simple</groupId>
-                    <artifactId>jopt-simple</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
@@ -55,8 +49,14 @@
         <dependency>
             <groupId>org.languagetool</groupId>
             <artifactId>languagetool-wikipedia</artifactId>
-            <version>4.7-SNAPSHOT</version>
+            <version>5.2-SNAPSHOT</version>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.sf.jopt-simple</groupId>
+                    <artifactId>jopt-simple</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

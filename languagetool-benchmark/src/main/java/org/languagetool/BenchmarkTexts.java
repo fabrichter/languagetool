@@ -62,6 +62,11 @@ class BenchmarkText implements Serializable {
 
 @State(Scope.Benchmark)
 public class BenchmarkTexts {
+
+  static {
+    Languages.useLanguagesFromPackages();
+  }
+
   private Map<String, BenchmarkText> benchmarkData = new HashMap<>();
 
   private void saveToCache(File file) throws IOException {
