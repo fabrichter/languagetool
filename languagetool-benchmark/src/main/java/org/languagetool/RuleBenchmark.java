@@ -51,6 +51,10 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 public class RuleBenchmark {
 
+  static {
+    Languages.useLanguagesFromPackages();
+  }
+
   static final class Settings {
     private Settings() {
     }
@@ -126,6 +130,7 @@ public class RuleBenchmark {
 
   public static void main(String[] args) throws RunnerException {
     List<String> languages = Settings.languages();
+
     for (String langCode : languages) {
       Language lang = Languages.getLanguageForShortCode(langCode);
       JLanguageTool lt = new JLanguageTool(lang);
