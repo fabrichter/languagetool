@@ -58,6 +58,37 @@ public final class MLServerGrpc {
     return getMatchMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest,
+      org.languagetool.rules.ml.MLServerProto.MatchResponse> getMatchAnalyzedMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "MatchAnalyzed",
+      requestType = org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest.class,
+      responseType = org.languagetool.rules.ml.MLServerProto.MatchResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest,
+      org.languagetool.rules.ml.MLServerProto.MatchResponse> getMatchAnalyzedMethod() {
+    io.grpc.MethodDescriptor<org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest, org.languagetool.rules.ml.MLServerProto.MatchResponse> getMatchAnalyzedMethod;
+    if ((getMatchAnalyzedMethod = MLServerGrpc.getMatchAnalyzedMethod) == null) {
+      synchronized (MLServerGrpc.class) {
+        if ((getMatchAnalyzedMethod = MLServerGrpc.getMatchAnalyzedMethod) == null) {
+          MLServerGrpc.getMatchAnalyzedMethod = getMatchAnalyzedMethod =
+              io.grpc.MethodDescriptor.<org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest, org.languagetool.rules.ml.MLServerProto.MatchResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "MatchAnalyzed"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  org.languagetool.rules.ml.MLServerProto.MatchResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new MLServerMethodDescriptorSupplier("MatchAnalyzed"))
+              .build();
+        }
+      }
+    }
+    return getMatchAnalyzedMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -113,6 +144,13 @@ public final class MLServerGrpc {
       asyncUnimplementedUnaryCall(getMatchMethod(), responseObserver);
     }
 
+    /**
+     */
+    public void matchAnalyzed(org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest request,
+        io.grpc.stub.StreamObserver<org.languagetool.rules.ml.MLServerProto.MatchResponse> responseObserver) {
+      asyncUnimplementedUnaryCall(getMatchAnalyzedMethod(), responseObserver);
+    }
+
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
@@ -122,6 +160,13 @@ public final class MLServerGrpc {
                 org.languagetool.rules.ml.MLServerProto.MatchRequest,
                 org.languagetool.rules.ml.MLServerProto.MatchResponse>(
                   this, METHODID_MATCH)))
+          .addMethod(
+            getMatchAnalyzedMethod(),
+            asyncUnaryCall(
+              new MethodHandlers<
+                org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest,
+                org.languagetool.rules.ml.MLServerProto.MatchResponse>(
+                  this, METHODID_MATCH_ANALYZED)))
           .build();
     }
   }
@@ -147,6 +192,14 @@ public final class MLServerGrpc {
       asyncUnaryCall(
           getChannel().newCall(getMatchMethod(), getCallOptions()), request, responseObserver);
     }
+
+    /**
+     */
+    public void matchAnalyzed(org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest request,
+        io.grpc.stub.StreamObserver<org.languagetool.rules.ml.MLServerProto.MatchResponse> responseObserver) {
+      asyncUnaryCall(
+          getChannel().newCall(getMatchAnalyzedMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -168,6 +221,13 @@ public final class MLServerGrpc {
     public org.languagetool.rules.ml.MLServerProto.MatchResponse match(org.languagetool.rules.ml.MLServerProto.MatchRequest request) {
       return blockingUnaryCall(
           getChannel(), getMatchMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public org.languagetool.rules.ml.MLServerProto.MatchResponse matchAnalyzed(org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest request) {
+      return blockingUnaryCall(
+          getChannel(), getMatchAnalyzedMethod(), getCallOptions(), request);
     }
   }
 
@@ -192,9 +252,18 @@ public final class MLServerGrpc {
       return futureUnaryCall(
           getChannel().newCall(getMatchMethod(), getCallOptions()), request);
     }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<org.languagetool.rules.ml.MLServerProto.MatchResponse> matchAnalyzed(
+        org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest request) {
+      return futureUnaryCall(
+          getChannel().newCall(getMatchAnalyzedMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_MATCH = 0;
+  private static final int METHODID_MATCH_ANALYZED = 1;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -215,6 +284,10 @@ public final class MLServerGrpc {
       switch (methodId) {
         case METHODID_MATCH:
           serviceImpl.match((org.languagetool.rules.ml.MLServerProto.MatchRequest) request,
+              (io.grpc.stub.StreamObserver<org.languagetool.rules.ml.MLServerProto.MatchResponse>) responseObserver);
+          break;
+        case METHODID_MATCH_ANALYZED:
+          serviceImpl.matchAnalyzed((org.languagetool.rules.ml.MLServerProto.AnalyzedMatchRequest) request,
               (io.grpc.stub.StreamObserver<org.languagetool.rules.ml.MLServerProto.MatchResponse>) responseObserver);
           break;
         default:
@@ -279,6 +352,7 @@ public final class MLServerGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new MLServerFileDescriptorSupplier())
               .addMethod(getMatchMethod())
+              .addMethod(getMatchAnalyzedMethod())
               .build();
         }
       }

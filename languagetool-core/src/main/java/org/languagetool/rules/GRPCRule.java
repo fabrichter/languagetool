@@ -32,7 +32,10 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
 import org.jetbrains.annotations.Nullable;
 import org.languagetool.AnalyzedSentence;
+import org.languagetool.AnalyzedToken;
+import org.languagetool.AnalyzedTokenReadings;
 import org.languagetool.JLanguageTool;
+import org.languagetool.chunking.ChunkTag;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.rules.ml.MLServerGrpc;
 import org.languagetool.rules.ml.MLServerProto;
@@ -171,8 +174,13 @@ public abstract class GRPCRule extends RemoteRule {
 
   private final Connection conn;
 
+  private final boolean sendAnalyzedData;
+
   public GRPCRule(ResourceBundle messages, RemoteRuleConfig config, boolean inputLogging) {
     super(messages, config, inputLogging);
+    sendAnalyzedData = config.getOptions()
+      .getOrDefault("analyzed", "false")
+      .equalsIgnoreCase("true");
 
     synchronized (servers) {
       Connection conn = null;
@@ -189,35 +197,87 @@ public abstract class GRPCRule extends RemoteRule {
     final MLServerProto.MatchRequest request;
     final List<AnalyzedSentence> sentences;
 
-    public MLRuleRequest(MLServerProto.MatchRequest request, List<AnalyzedSentence> sentences) {
-      this.request = request;
+    public MLRuleRequest(List<AnalyzedSentence> sentences, List<Long> ids) {
       this.sentences = sentences;
+      List<String> text = sentences.stream().map(AnalyzedSentence::getText).collect(Collectors.toList());
+      this.request = MLServerProto.MatchRequest.newBuilder()
+        .addAllSentences(text)
+        .setInputLogging(inputLogging)
+        .addAllTextSessionID(ids)
+        .build();
+    }
+  }
+
+  private static MLServerProto.AnalyzedToken convertToGRPC(AnalyzedToken token) {
+      MLServerProto.AnalyzedToken.Builder t = MLServerProto.AnalyzedToken.newBuilder();
+      if (token.getLemma() != null) {
+        t.setLemma(token.getLemma());
+      }
+      if (token.getPOSTag() != null) {
+        t.setPosTag(token.getPOSTag());
+      }
+      t.setToken(token.getToken());
+      return t.build();
+  }
+
+  private static MLServerProto.AnalyzedTokenReadings convertToGRPC(AnalyzedTokenReadings readings) {
+    return MLServerProto.AnalyzedTokenReadings.newBuilder()
+      .addAllChunkTags(readings.getChunkTags().stream().map(ChunkTag::getChunkTag).collect(Collectors.toList()))
+      .addAllReadings(readings.getReadings().stream().map(GRPCRule::convertToGRPC).collect(Collectors.toList()))
+      .build();
+
+  }
+
+  private static MLServerProto.AnalyzedSentence convertToGRPC(AnalyzedSentence sentence) {
+    return MLServerProto.AnalyzedSentence.newBuilder()
+      .setText(sentence.getText())
+      .addAllTokens(Arrays.stream(sentence.getTokens()).map(GRPCRule::convertToGRPC).collect(Collectors.toList()))
+      .build();
+  }
+
+  protected class AnalyzedMLRuleRequest extends RemoteRule.RemoteRequest {
+    final MLServerProto.AnalyzedMatchRequest request;
+    final List<AnalyzedSentence> sentences;
+
+    public AnalyzedMLRuleRequest(List<AnalyzedSentence> sentences, List<Long> ids) {
+      this.sentences = sentences;
+      this.request = MLServerProto.AnalyzedMatchRequest.newBuilder()
+        .addAllTextSessionID(ids)
+        .setInputLogging(inputLogging)
+        .addAllSentences(sentences.stream().map(GRPCRule::convertToGRPC).collect(Collectors.toList()))
+        .build();
     }
   }
 
   @Override
   protected RemoteRule.RemoteRequest prepareRequest(List<AnalyzedSentence> sentences, AnnotatedText annotatedText, @Nullable Long textSessionId) {
-    List<String> text = sentences.stream().map(AnalyzedSentence::getText).collect(Collectors.toList());
     List<Long> ids = Collections.emptyList();
     if (textSessionId != null) {
-      ids = Collections.nCopies(text.size(), textSessionId);
+      ids = Collections.nCopies(sentences.size(), textSessionId);
     }
-
-    MLServerProto.MatchRequest req = MLServerProto.MatchRequest.newBuilder()
-      .addAllSentences(text)
-      .setInputLogging(inputLogging)
-      .addAllTextSessionID(ids)
-      .build();
-    return new MLRuleRequest(req, sentences);
+    if (sendAnalyzedData) {
+      return new AnalyzedMLRuleRequest(sentences, ids);
+    } else {
+      return new MLRuleRequest(sentences, ids);
+    }
   }
 
   @Override
   protected Callable<RemoteRuleResult> executeRequest(RemoteRule.RemoteRequest request) {
     return () -> {
-      MLRuleRequest req = (MLRuleRequest) request;
 
-      MLServerProto.MatchResponse response = conn.stub.match(req.request);
-      List<RuleMatch> matches = Streams.zip(response.getSentenceMatchesList().stream(), req.sentences.stream(), (matchList, sentence) ->
+      MLServerProto.MatchResponse response;
+      List<AnalyzedSentence> sentences;
+      if (sendAnalyzedData) {
+        AnalyzedMLRuleRequest req = (AnalyzedMLRuleRequest) request;
+        sentences = req.sentences;
+        response = conn.stub.matchAnalyzed(req.request);
+      } else {
+        MLRuleRequest req = (MLRuleRequest) request;
+        sentences = req.sentences;
+        response = conn.stub.match(req.request);
+      }
+      List<RuleMatch> matches = Streams.zip(response.getSentenceMatchesList().stream(), sentences.stream(), (matchList, sentence) ->
         matchList.getMatchesList().stream().map(match -> {
             GRPCSubRule subRule = new GRPCSubRule(match.getSubId(), match.getRuleDescription());
             String message = match.getMatchDescription();
