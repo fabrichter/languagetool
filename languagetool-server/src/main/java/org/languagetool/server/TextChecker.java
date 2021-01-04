@@ -24,6 +24,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.languagetool.*;
@@ -36,9 +38,8 @@ import org.languagetool.rules.RemoteRule;
 import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.bitext.BitextRule;
 import org.languagetool.rules.spelling.morfologik.suggestions_ordering.SuggestionsOrdererConfig;
+import org.languagetool.tools.LoggingTools;
 import org.languagetool.tools.Tools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -76,7 +77,7 @@ abstract class TextChecker {
   protected static final int NUM_PIPELINES_PER_SETTING = 3; // for prewarming
 
   protected final HTTPServerConfig config;
-  private static final Logger logger = LoggerFactory.getLogger(TextChecker.class);
+  private static final Logger logger = LogManager.getLogger(TextChecker.class);
 
   private static final String ENCODING = "UTF-8";
   private static final int CACHE_STATS_PRINT = 500; // print cache stats every n cache requests
@@ -499,6 +500,8 @@ abstract class TextChecker {
             + ", " + messageSent + ", q:" + (workQueue != null ? workQueue.size() : "?")
             + ", h:" + reqCounter.getHandleCount() + ", dH:" + reqCounter.getDistinctIps()
             + ", m:" + ServerTools.getModeForLog(mode) + skipLimits);
+    LoggingTools.info(logger, "Check done", "check",
+      "chars", aText.getPlainText().length(), "matches", matches.size(), "time", computationTime + "ms");
 
     int matchCount = matches.size();
     Map<String, Integer> ruleMatchCount = new HashMap<>();

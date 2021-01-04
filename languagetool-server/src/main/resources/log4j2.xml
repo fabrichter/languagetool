@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+<!--            <PatternLayout pattern="%d{YYYY-MM-DD HH:mm:ss.SSS} [%t] %-5level %logger{36} %msg%n"/>-->
+            <JsonTemplateLayout eventTemplateUri="classpath:LTLogLayout.json">
+                <!-- could use pre-defined layout and add EventTemplateAdditionalFields, not working in 2.14.0: https://issues.apache.org/jira/browse/LOG4J2-2961 -->
+            </JsonTemplateLayout>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
