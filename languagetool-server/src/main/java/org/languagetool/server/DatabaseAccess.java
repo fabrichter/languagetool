@@ -29,8 +29,8 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,8 +44,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static org.languagetool.server.ServerTools.print;
-
 /**
  * Encapsulate database access. Will do nothing if database access is not configured.
  * @since 4.2
@@ -54,7 +52,7 @@ class DatabaseAccess {
 
   private static DatabaseAccess instance;
   private static SqlSessionFactory sqlSessionFactory;
-  private static final Logger logger = LoggerFactory.getLogger(DatabaseAccess.class);
+  private static final Logger logger = LogManager.getLogger();
 
   private final Cache<Long, List<UserDictEntry>> userDictCache = CacheBuilder.newBuilder()
           .maximumSize(1000)

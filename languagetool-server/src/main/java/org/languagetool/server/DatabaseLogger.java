@@ -24,6 +24,9 @@ package org.languagetool.server;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.languagetool.tools.LoggingTools;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -43,6 +46,8 @@ class DatabaseLogger {
   static int SQL_BATCH_WAITING_TIME = 10000; // milliseconds to wait until batch gets committed anyway
   
   private static final int MAX_QUEUE_SIZE = 50000; // drop entries after limit is reached, to avoid running out of memory
+
+  private static final Logger logger = LogManager.getLogger();
 
   /**
    * @return an instance that will be disabled until initialized by DatabaseAccess
@@ -74,7 +79,8 @@ class DatabaseLogger {
             && batchSize < SQL_BATCH_SIZE
             && System.currentTimeMillis() - batchTime < SQL_BATCH_WAITING_TIME)  {
             if (messages.size() > SQL_BATCH_SIZE) {
-              ServerTools.print(String.format("Logging queue filling up: %d entries", messages.size()));
+              LoggingTools.info(logger, "Logging queue filling up",
+                "db_logging_queue_size", "size", messages.size());
             }
             // polling to be able to react when waiting time has elapsed
             DatabaseLogEntry entry = messages.poll(POLLING_TIME, TimeUnit.MILLISECONDS);
@@ -132,7 +138,8 @@ class DatabaseLogger {
         if (messages.size() < MAX_QUEUE_SIZE) {
           messages.put(entry);
         } else {
-          ServerTools.print("Logging queue has reached size limit; discarding new messages.");
+          LoggingTools.warn(logger, "DB logging queue limit reached; discarding new messages",
+            "db_logging_queue_limit");
         }
       }
     } catch (InterruptedException e) {

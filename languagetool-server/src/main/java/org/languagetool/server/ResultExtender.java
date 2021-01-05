@@ -25,8 +25,8 @@ import org.languagetool.AnalyzedTokenReadings;
 import org.languagetool.Tag;
 import org.languagetool.rules.*;
 import org.languagetool.tools.Tools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.DataOutputStream;
@@ -46,7 +46,7 @@ import java.util.*;
  */
 class ResultExtender {
 
-  private static final Logger logger = LoggerFactory.getLogger(ResultExtender.class);
+  private static final Logger logger = LogManager.getLogger();
 
   private final URL url;
   private final int connectTimeoutMillis;

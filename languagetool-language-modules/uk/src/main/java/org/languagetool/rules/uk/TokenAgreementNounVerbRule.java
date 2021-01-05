@@ -37,8 +37,8 @@ import org.languagetool.rules.Categories;
 import org.languagetool.rules.Rule;
 import org.languagetool.rules.RuleMatch;
 import org.languagetool.tagging.uk.PosTagHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * A rule that checks if noun and verb agree
@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TokenAgreementNounVerbRule extends Rule {
   
-  private static final Logger logger = LoggerFactory.getLogger(TokenAgreementNounVerbRule.class);
+  private static final Logger logger = LogManager.getLogger();
 
   private static final Pattern NOUN_V_NAZ_PATTERN = Pattern.compile("noun.*:v_naz.*");
 

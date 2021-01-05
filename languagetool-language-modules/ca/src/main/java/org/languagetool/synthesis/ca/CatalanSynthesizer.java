@@ -18,16 +18,18 @@
  */
 package org.languagetool.synthesis.ca;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.languagetool.AnalyzedToken;
+import org.languagetool.Language;
+import org.languagetool.synthesis.BaseSynthesizer;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import org.languagetool.AnalyzedToken;
-import org.languagetool.Language;
-import org.languagetool.synthesis.BaseSynthesizer;
 
 /**
  * Catalan word form synthesizer.
@@ -64,6 +66,8 @@ public class CatalanSynthesizer extends BaseSynthesizer {
   
   /** Patterns verb **/
   private static final Pattern pVerb = Pattern.compile("V.*[CVBXYZ0123456]");
+
+  private static final Logger logger = LogManager.getLogger();
 
   public CatalanSynthesizer(Language lang) {
     super("/ca/ca.sor", "/ca/ca-ES-valencia_synth.dict", "/ca/ca-ES-valencia_tags.txt", lang);
@@ -134,8 +138,7 @@ public class CatalanSynthesizer extends BaseSynthesizer {
       try {
         p = Pattern.compile(posTag);
       } catch (PatternSyntaxException e) {
-        System.err.println("WARNING: Error trying to synthesize POS tag "
-            + posTag + " from token " + token.getToken() + ": " + e.getMessage());
+        logger.error("Error trying to synthesize POS tag " + posTag + " from token " + token.getToken(), e);
         return null;
       }
       List<String> results = new ArrayList<>();

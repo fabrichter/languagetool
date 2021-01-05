@@ -25,8 +25,8 @@ import org.languagetool.AnalyzedSentence;
 import org.languagetool.Language;
 import org.languagetool.languagemodel.LanguageModel;
 import org.languagetool.tokenizers.Tokenizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -36,7 +36,7 @@ public final class LanguageModelUtils {
   private LanguageModelUtils(){
   }
 
-  private static final Logger logger = LoggerFactory.getLogger(LanguageModelUtils.class);
+  private static final Logger logger = LogManager.getLogger();
 
   /**
    * Return a tokenizer that works more like Google does for its ngram index (which

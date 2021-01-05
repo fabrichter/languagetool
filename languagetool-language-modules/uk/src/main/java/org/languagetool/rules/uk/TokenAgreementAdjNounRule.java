@@ -18,19 +18,9 @@
  */
 package org.languagetool.rules.uk;
 
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.ResourceBundle;
-import java.util.regex.Pattern;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.languagetool.AnalyzedSentence;
 import org.languagetool.AnalyzedToken;
 import org.languagetool.AnalyzedTokenReadings;
@@ -43,8 +33,12 @@ import org.languagetool.rules.uk.InflectionHelper.Inflection;
 import org.languagetool.synthesis.Synthesizer;
 import org.languagetool.tagging.uk.IPOSTag;
 import org.languagetool.tagging.uk.PosTagHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 /**
  * A rule that checks if adjective and following noun agree on gender and inflection
@@ -54,7 +48,7 @@ import org.slf4j.LoggerFactory;
 public class TokenAgreementAdjNounRule extends Rule {
   static final List<String> FAKE_FEM_LIST = Arrays.asList("ступінь", "степінь", "продаж", "собака", "дріб", "ярмарок", "нежить", "рукопис", "накип", "насип", "путь");
 
-  private static final Logger logger = LoggerFactory.getLogger(TokenAgreementAdjNounRule.class);
+  private static final Logger logger = LogManager.getLogger();
 
   static final Pattern ADJ_INFLECTION_PATTERN = Pattern.compile(":([mfnp]):(v_...)(:r(in)?anim)?");
   static final Pattern NOUN_INFLECTION_PATTERN = Pattern.compile("((?:[iu]n)?anim):([mfnps]):(v_...)");

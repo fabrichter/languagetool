@@ -27,9 +27,10 @@ import org.languagetool.rules.translation.DataSource;
 import org.languagetool.rules.translation.TranslationEntry;
 import org.languagetool.rules.translation.Translator;
 import org.languagetool.tagging.Tagger;
+import org.languagetool.tools.LoggingTools;
 import org.languagetool.tools.StringTools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
  */
 public class BeoLingusTranslator implements Translator {
 
-  private static final Logger logger = LoggerFactory.getLogger(BeoLingusTranslator.class);
+  private static final Logger logger = LogManager.getLogger();
   private static final Pattern enUsPattern = Pattern.compile(".*?\\w+ \\[(Br|Am)\\.\\] ?/ ?\\w+ \\[(Br|Am)\\.\\].*");
 
   private static BeoLingusTranslator instance;
@@ -70,10 +71,12 @@ public class BeoLingusTranslator implements Translator {
   public static synchronized BeoLingusTranslator getInstance(GlobalConfig globalConfig) throws IOException {
     if (instance == null && globalConfig != null && globalConfig.getBeolingusFile() != null) {
       long t1 = System.currentTimeMillis();
-      logger.info("Init dict from " + globalConfig.getBeolingusFile() + "...");
+      LoggingTools.info(logger, "Init dict from " + globalConfig.getBeolingusFile() + "...",
+        "translation_dict_loading", "file", globalConfig.getBeolingusFile(), "translationPath", "de-en");
       instance = new BeoLingusTranslator(globalConfig.getBeolingusFile());
       long t2 = System.currentTimeMillis();
-      logger.info("Init dict done (" + (t2-t1) + "ms) - loaded " + instance.getDeEnSize() + " de -> en items.");
+      LoggingTools.info(logger, "Init dict done (" + (t2-t1) + "ms) - loaded " + instance.getDeEnSize() + " de -> en items.",
+        "translation_dict_loaded", "duration", t2-t1, "size", instance.getDeEnSize());
     }
     return instance;
   }

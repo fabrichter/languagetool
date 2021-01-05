@@ -29,8 +29,8 @@ import org.languagetool.rules.*;
 import org.languagetool.rules.neuralnetwork.Word2VecModel;
 import org.languagetool.rules.patterns.*;
 import org.languagetool.rules.spelling.SpellingCheckRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -65,7 +65,7 @@ import java.util.stream.Collectors;
  * @see MultiThreadedJLanguageTool
  */
 public class JLanguageTool {
-  private static final Logger logger = LoggerFactory.getLogger(JLanguageTool.class);
+  private static final Logger logger = LogManager.getLogger();
 
   /** LanguageTool version as a string like {@code 2.3} or {@code 2.4-SNAPSHOT}. */
   public static final String VERSION = "5.3-SNAPSHOT";

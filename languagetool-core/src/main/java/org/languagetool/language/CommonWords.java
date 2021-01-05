@@ -19,10 +19,17 @@
 package org.languagetool.language;
 
 import org.apache.commons.lang3.StringUtils;
-import org.languagetool.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.languagetool.JLanguageTool;
+import org.languagetool.Language;
+import org.languagetool.Languages;
 import org.languagetool.broker.ResourceDataBroker;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -32,6 +39,7 @@ import java.util.regex.Pattern;
  */
 public class CommonWords {
 
+  private static final Logger logger = LogManager.getLogger();
   private final static Map<String, List<Language>> word2langs = Collections.synchronizedMap(new HashMap<>());
   private final static Pattern numberPattern = Pattern.compile("[0-9.,%-]+");
   
@@ -65,7 +73,7 @@ public class CommonWords {
                 throw new IOException("Common words file not found for " + lang + ": " + path);
               }
             } else {
-              System.out.println("WARN: no common words file defined for " + lang + " - this language might not be correctly auto-detected");
+              logger.info("No common words file defined for " + lang + " - this language might not be correctly auto-detected");
               continue;
             }
             try (Scanner scanner = new Scanner(stream, "utf-8")) {

@@ -18,8 +18,8 @@
  */
 package org.languagetool.language;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -32,7 +32,7 @@ import static org.languagetool.language.LanguageIdentifier.canLanguageBeDetected
  */
 public class FastText {
 
-  private static final Logger logger = LoggerFactory.getLogger(FastText.class);
+  private static final Logger logger = LogManager.getLogger();
   private static final int K_HIGHEST_SCORES = 5;
 
   private final Process fasttextProcess;

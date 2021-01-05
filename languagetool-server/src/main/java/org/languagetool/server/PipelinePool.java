@@ -31,9 +31,10 @@ import org.languagetool.*;
 import org.languagetool.gui.Configuration;
 import org.languagetool.rules.DictionaryMatchFilter;
 import org.languagetool.rules.RemoteRuleConfig;
+import org.languagetool.tools.LoggingTools;
 import org.languagetool.tools.Tools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -51,7 +52,7 @@ import java.util.stream.Collectors;
  */
 class PipelinePool {
 
-  private static final Logger logger = LoggerFactory.getLogger(PipelinePool.class);
+  private static final Logger logger = LogManager.getLogger();
 
   static final long PIPELINE_EXPIRE_TIME = 15 * 60 * 1000;
 
@@ -157,7 +158,8 @@ class PipelinePool {
             return false;
           }
         }));
-        ServerTools.print("Removing " + removed.get() + " expired pipelines");
+        LoggingTools.info(logger, "Removing expired pipelines",
+          "pipelines_expired", "expiredCount", removed.get());
       }
 
       requests++;

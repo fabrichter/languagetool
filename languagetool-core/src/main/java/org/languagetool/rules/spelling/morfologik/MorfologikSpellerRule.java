@@ -34,8 +34,8 @@ import org.languagetool.rules.spelling.SpellingCheckRule;
 import org.languagetool.rules.spelling.suggestions.SuggestionsChanges;
 import org.languagetool.rules.translation.TranslationEntry;
 import org.languagetool.rules.translation.Translator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -49,7 +49,7 @@ import static org.languagetool.JLanguageTool.getDataBroker;
 
 public abstract class MorfologikSpellerRule extends SpellingCheckRule {
 
-  private static final Logger logger = LoggerFactory.getLogger(MorfologikSpellerRule.class);
+  private static final Logger logger = LogManager.getLogger();
 
   protected MorfologikMultiSpeller speller1;
   protected MorfologikMultiSpeller speller2;

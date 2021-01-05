@@ -30,8 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+//import org.apache.logging.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
 
 /**
  * Matches a pattern rule against text.
@@ -42,7 +42,7 @@ final public class PatternRuleMatcher extends AbstractPatternRulePerformer imple
 
   private static final Map<String,Integer> currentlyActiveRules = new ConcurrentHashMap<>();
 
-  //private static final Logger logger = LoggerFactory.getLogger(PatternRuleMatcher.class);
+  //private static final Logger logger = LogManager.getLogger();
   private static final String SUGGESTION_START_TAG = "<suggestion>";
   private static final String SUGGESTION_END_TAG = "</suggestion>";
 

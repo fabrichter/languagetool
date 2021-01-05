@@ -34,8 +34,8 @@ import org.languagetool.rules.SuggestedReplacement;
 import org.languagetool.rules.ngrams.LanguageModelUtils;
 import org.languagetool.rules.spelling.morfologik.suggestions_ordering.DetailedDamerauLevenstheinDistance;
 import org.languagetool.rules.spelling.symspell.implementation.EditDistance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  */
 public class SuggestionsOrdererFeatureExtractor implements SuggestionsOrderer {
 
-  private static final Logger logger = LoggerFactory.getLogger(SuggestionsOrdererFeatureExtractor.class);
+  private static final Logger logger = LogManager.getLogger();
 
   protected final Language language;
   protected final LanguageModel languageModel;

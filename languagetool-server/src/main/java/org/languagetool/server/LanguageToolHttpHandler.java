@@ -26,8 +26,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.languagetool.ErrorRateTooHighException;
 import org.languagetool.tools.StringTools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -49,7 +49,7 @@ import static org.languagetool.server.ServerTools.print;
 
 class LanguageToolHttpHandler implements HttpHandler {
 
-  private static final Logger logger = LoggerFactory.getLogger(LanguageToolHttpHandler.class);
+  private static final Logger logger = LogManager.getLogger();
 
   static final String API_DOC_URL = "https://languagetool.org/http-api/swagger-ui/#/default";
   

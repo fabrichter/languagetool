@@ -25,21 +25,33 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.MapMessage;
 
+import java.util.Objects;
+
 public final class LoggingTools {
   private LoggingTools() {
   }
 
   public static void log(Logger logger, Level level, String message, String tag, Object... fields) {
+   log(logger, level, null, message, tag, fields);
+  }
+  public static void log(Logger logger, Level level, Throwable throwable, String message, String tag, Object... fields) {
     if (fields.length % 2 != 0) {
       throw new IllegalArgumentException("Odd number of varargs (key-value pairs for fields) provided");
     }
     MapMessage msg = new MapMessage<>(2 + fields.length / 2);
-    msg.put("message", message);
-    msg.put("tag", tag);
-    for (int i = 0; i < fields.length / 2; i+=2) {
-      msg.put(fields[i].toString(), fields[i+1].toString());
+    msg.put("_msg", message);
+    msg.put("_tag", tag);
+    for (int i = 0; i <= fields.length / 2; i+=2) {
+      Object key = Objects.requireNonNull(fields[i],
+        "Logged field names must be non-null");
+      Object value = fields[i+1];
+      msg.put(key.toString(), Objects.toString(value));
     }
-    logger.log(level, msg);
+    if (throwable != null) {
+      logger.log(level, msg, throwable);
+    } else {
+      logger.log(level, msg);
+    }
   }
   public static void debug(Logger logger, String message, String tag, Object... fields) {
     log(logger, Level.DEBUG, message, tag, fields);
@@ -50,10 +62,19 @@ public final class LoggingTools {
   public static void warn(Logger logger, String message, String tag, Object... fields) {
     log(logger, Level.WARN, message, tag, fields);
   }
+  public static void warn(Logger logger, Throwable throwable, String message, String tag, Object... fields) {
+    log(logger, Level.WARN, throwable, message, tag, fields);
+  }
   public static void error(Logger logger, String message, String tag, Object... fields) {
     log(logger, Level.ERROR, message, tag, fields);
   }
+  public static void error(Logger logger, Throwable throwable, String message, String tag, Object... fields) {
+    log(logger, Level.ERROR, throwable, message, tag, fields);
+  }
   public static void fatal(Logger logger, String message, String tag, Object... fields) {
     log(logger, Level.FATAL, message, tag, fields);
+  }
+  public static void fatal(Logger logger, Throwable throwable, String message, String tag, Object... fields) {
+    log(logger, Level.FATAL, throwable, message, tag, fields);
   }
 }

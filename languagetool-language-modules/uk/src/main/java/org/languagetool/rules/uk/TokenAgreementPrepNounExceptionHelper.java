@@ -10,11 +10,11 @@ import org.languagetool.rules.uk.SearchHelper.Condition;
 import org.languagetool.rules.uk.SearchHelper.Match;
 import org.languagetool.tagging.uk.IPOSTag;
 import org.languagetool.tagging.uk.PosTagHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 public class TokenAgreementPrepNounExceptionHelper {
-  private static final Logger logger = LoggerFactory.getLogger(TokenAgreementPrepNounExceptionHelper.class);
+  private static final Logger logger = LogManager.getLogger();
 
   private static final Set<String> NAMES = new HashSet<>(Arrays.asList(
       "ім'я", "прізвище"

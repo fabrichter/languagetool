@@ -27,8 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.languagetool.AnalyzedTokenReadings;
 import org.languagetool.rules.patterns.RuleFilter;
 import org.languagetool.tools.StringTools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Accepts rule matches if a date doesn't match the accompanying weekday, e.g. if {@code Monday, 8 November 2003}
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDateCheckFilter extends RuleFilter {
 
-  private static final Logger logger = LoggerFactory.getLogger(AbstractDateCheckFilter.class);
+  private static final Logger logger = LogManager.getLogger();
 
   // The day of the month may contain not only digits but also extra letters
   // such as"22nd" in English or "22-an" in Esperanto. The regexp extracts

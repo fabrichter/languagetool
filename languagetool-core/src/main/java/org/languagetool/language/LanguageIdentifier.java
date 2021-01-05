@@ -27,8 +27,8 @@ import com.optimaize.langdetect.text.*;
 import org.jetbrains.annotations.Nullable;
 import org.languagetool.*;
 import org.languagetool.noop.NoopLanguage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.*;
 import java.util.*;
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  */
 public class LanguageIdentifier {
 
-  private static final Logger logger = LoggerFactory.getLogger(LanguageIdentifier.class);
+  private static final Logger logger = LogManager.getLogger();
   private static final double MINIMAL_CONFIDENCE = 0.9;
   private static final int SHORT_ALGO_THRESHOLD = 50;
   // texts shorter than this will *only* consider preferred languages (if set):

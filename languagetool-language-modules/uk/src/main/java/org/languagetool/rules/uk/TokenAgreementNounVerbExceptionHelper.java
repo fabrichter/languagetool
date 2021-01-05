@@ -17,15 +17,15 @@ import org.languagetool.rules.uk.SearchHelper.Condition;
 import org.languagetool.rules.uk.SearchHelper.Match;
 import org.languagetool.tagging.uk.IPOSTag;
 import org.languagetool.tagging.uk.PosTagHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @since 3.6
  */
 public final class TokenAgreementNounVerbExceptionHelper {
 
-  private static final Logger logger = LoggerFactory.getLogger(TokenAgreementNounVerbExceptionHelper.class);
+  private static final Logger logger = LogManager.getLogger();
 
   private static final Set<String> MASC_FEM_SET = extendSet(ExtraDictionaryLoader.loadSet("/uk/masc_fem.txt"), "екс-");
   private static final Pattern INF_ARGREEMENT_PATTERN = Pattern.compile(

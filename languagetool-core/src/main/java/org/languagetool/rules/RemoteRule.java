@@ -26,8 +26,8 @@ import org.jetbrains.annotations.Nullable;
 import org.languagetool.AnalyzedSentence;
 import org.languagetool.Language;
 import org.languagetool.markup.AnnotatedText;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.util.*;
@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class RemoteRule extends Rule {
   
-  private static final Logger logger = LoggerFactory.getLogger(RemoteRule.class);
+  private static final Logger logger = LogManager.getLogger();
 
   /* needs to be shared between rule instances because new instances may be created and discarded often
      needs to be a map because 'static' and inheritance don't play nice in Java */

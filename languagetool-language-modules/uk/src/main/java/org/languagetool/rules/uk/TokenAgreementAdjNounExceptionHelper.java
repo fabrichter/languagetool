@@ -13,14 +13,14 @@ import org.languagetool.AnalyzedTokenReadings;
 import org.languagetool.rules.uk.InflectionHelper.Inflection;
 import org.languagetool.tagging.uk.IPOSTag;
 import org.languagetool.tagging.uk.PosTagHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @since 3.6
  */
 final class TokenAgreementAdjNounExceptionHelper {
-  private static final Logger logger = LoggerFactory.getLogger(TokenAgreementAdjNounExceptionHelper.class);
+  private static final Logger logger = LogManager.getLogger();
 
   private static final Pattern NUMBER_V_NAZ = Pattern.compile("number|numr:p:v_naz|noun.*?:p:v_naz:&numr.*");
   // including latin 'a' and 'i' so the rules don't trip on them in Ukrainian sentences

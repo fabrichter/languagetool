@@ -23,6 +23,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
@@ -33,6 +35,7 @@ import org.languagetool.rules.CorrectExample;
 import org.languagetool.rules.IncorrectExample;
 import org.languagetool.rules.Rule;
 import org.languagetool.rules.TextLevelRule;
+import org.languagetool.tools.LoggingTools;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -50,6 +53,7 @@ class ApiV2 {
   private static final String JSON_CONTENT_TYPE = "application/json";
   private static final String TEXT_CONTENT_TYPE = "text/plain";
   private static final String ENCODING = "UTF-8";
+  private static final Logger logger = LogManager.getLogger();
 
   private final TextChecker textChecker;
   private final String allowOriginUrl;
@@ -289,7 +293,8 @@ class ApiV2 {
     if (message != null && message.length() > 250) {
       message = message.substring(0, 250) + "...";
     }
-    ServerTools.print("Log message from client: " + message + " - User-Agent: " + httpExchange.getRequestHeaders().getFirst("User-Agent"));
+    LoggingTools.info(logger, "Message from client (/v2/log)", "client_log_message",
+      "messageContent", message, "userAgent", httpExchange.getRequestHeaders().getFirst("User-Agent"));
     String response = "OK";
     httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.getBytes(ENCODING).length);
     httpExchange.getResponseBody().write(response.getBytes(ENCODING));

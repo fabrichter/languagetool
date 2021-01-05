@@ -30,8 +30,8 @@ import org.languagetool.rules.uk.LemmaHelper;
 import org.languagetool.tagging.BaseTagger;
 import org.languagetool.tagging.TaggedWord;
 import org.languagetool.tagging.WordTagger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 
 /** 
@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * @author Andriy Rysin
  */
 public class UkrainianTagger extends BaseTagger {
-  private static final Logger logger = LoggerFactory.getLogger(UkrainianTagger.class);
+  private static final Logger logger = LogManager.getLogger();
 
   private static final Pattern NUMBER = Pattern.compile("[+-±]?[€₴\\$]?[0-9]+(,[0-9]+)?([-–—][0-9]+(,[0-9]+)?)?(%|°С?)?|\\d{1,3}([\\s\u00A0\u202F]\\d{3})+");
   // full latin number regex: M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})

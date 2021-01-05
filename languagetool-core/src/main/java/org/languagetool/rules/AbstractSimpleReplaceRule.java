@@ -29,8 +29,8 @@ import org.languagetool.AnalyzedTokenReadings;
 import org.languagetool.JLanguageTool;
 import org.languagetool.synthesis.Synthesizer;
 import org.languagetool.tools.StringTools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * A rule that matches words which should not be used and suggests
@@ -43,7 +43,7 @@ public abstract class AbstractSimpleReplaceRule extends Rule {
 
   protected boolean ignoreTaggedWords = false;
 
-  private static final Logger logger = LoggerFactory.getLogger(AbstractSimpleReplaceRule.class);
+  private static final Logger logger = LogManager.getLogger();
   private boolean checkLemmas = true;
 
   protected abstract Map<String, List<String>> getWrongWords();

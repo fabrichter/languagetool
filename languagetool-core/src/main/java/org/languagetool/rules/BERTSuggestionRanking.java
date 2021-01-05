@@ -31,8 +31,9 @@ import org.languagetool.AnalyzedSentence;
 import org.languagetool.Language;
 import org.languagetool.languagemodel.bert.RemoteLanguageModel;
 import org.languagetool.markup.AnnotatedText;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.languagetool.tools.LoggingTools;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
@@ -48,7 +49,7 @@ public class BERTSuggestionRanking extends RemoteRule {
   // only for RemoteRuleConfig
   public static final String RULE_ID = "BERT_SUGGESTION_RANKING";
 
-  private static final Logger logger = LoggerFactory.getLogger(BERTSuggestionRanking.class);
+  private static final Logger logger = LogManager.getLogger();
 
   private static final LoadingCache<RemoteRuleConfig, RemoteLanguageModel> models =
     CacheBuilder.newBuilder().build(CacheLoader.from(serviceConfiguration -> {
@@ -83,7 +84,8 @@ public class BERTSuggestionRanking extends RemoteRule {
       try {
         model = models.get(serviceConfiguration);
       } catch (Exception e) {
-        logger.error("Could not connect to BERT service at " + serviceConfiguration + " for suggestion reranking", e);
+        LoggingTools.error(logger, e, "Could not connect to BERT service at " + serviceConfiguration + " for suggestion reranking",
+          "bert_reranking_connection_error", "service", "bert_reranking", "errorType", "remoteServiceError");
       }
       this.model = model;
     }
@@ -127,7 +129,8 @@ public class BERTSuggestionRanking extends RemoteRule {
       }
       return new MatchesForReordering(matches, requests);
     } catch (IOException e) {
-      logger.error("Error while executing rule " + wrappedRule.getId(), e);
+      LoggingTools.error(logger, e, "Error while executing rule " + wrappedRule.getId(),
+        "bert_reranking_rule_error", "wrappedRuleID", wrappedRule.getId());
       return new MatchesForReordering(Collections.emptyList(), Collections.emptyList());
     }
   }

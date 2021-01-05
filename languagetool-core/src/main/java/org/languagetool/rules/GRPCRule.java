@@ -37,8 +37,8 @@ import org.languagetool.Language;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.rules.ml.MLServerGrpc;
 import org.languagetool.rules.ml.MLServerProto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.net.ssl.SSLException;
 import java.io.File;
@@ -69,7 +69,7 @@ import java.util.stream.Collectors;
 
  */
 public abstract class GRPCRule extends RemoteRule {
-  private static final Logger logger = LoggerFactory.getLogger(GRPCRule.class);
+  private static final Logger logger = LogManager.getLogger();
 
   public static String cleanID(String id) {
     return id.replaceAll("[^a-zA-Z_]", "_").toUpperCase();
