@@ -28,6 +28,7 @@ import org.languagetool.Language;
 import org.languagetool.markup.AnnotatedText;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.languagetool.tools.LoggingTools;
 
 import java.io.IOException;
 import java.util.*;
@@ -153,14 +154,19 @@ public abstract class RemoteRule extends Rule {
 
           return result;
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-          logger.warn("Error while fetching results for remote rule " + ruleId + ", tried " + (i + 1) + " times, timeout: " + timeout + "ms" , e);
+          String tag, errorType;
 
           RemoteRuleMetrics.RequestResult status;
           if (e instanceof TimeoutException || e instanceof InterruptedException) {
             status = RemoteRuleMetrics.RequestResult.TIMEOUT;
+            tag = "remote_rule_timeout";
+            errorType = "remoteServiceTimeout";
           } else {
             status = RemoteRuleMetrics.RequestResult.ERROR;
+            tag = "remote_rule_error";
+            errorType = "remoteServiceError";
           }
+          LoggingTools.warn(logger, e, "Error while fetching results for remote rule " + ruleId + ", tried " + (i + 1) + " times, timeout: " + timeout + "ms" , tag, "errorType", errorType, "remoteRuleID", ruleId, "retries", i, "timeout", timeout, "service", "remote_rule");
 
           RemoteRuleMetrics.request(ruleId, i, System.nanoTime() - startTime, characters, status);
         }
@@ -169,7 +175,7 @@ public abstract class RemoteRule extends Rule {
       logger.warn("Fetching results for remote rule " + ruleId + " failed.");
       if (consecutiveFailures.get(ruleId).get() >= serviceConfiguration.getFall()) {
         lastFailure.put(ruleId, System.currentTimeMillis());
-        logger.warn("Remote rule " + ruleId + " marked as DOWN.");
+        LoggingTools.warn(logger, "Remote rule " + ruleId + " marked as DOWN.", "remote_rule_down", "errorType", "remoteServiceDown", "remoteRuleID", ruleId, "service", "remote_rule");
         RemoteRuleMetrics.downtime(ruleId, serviceConfiguration.getDownMilliseconds());
         RemoteRuleMetrics.up(ruleId, false);
       }

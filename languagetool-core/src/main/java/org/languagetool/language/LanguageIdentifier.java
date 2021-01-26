@@ -29,6 +29,7 @@ import org.languagetool.*;
 import org.languagetool.noop.NoopLanguage;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.languagetool.tools.LoggingTools;
 
 import java.io.*;
 import java.util.*;
@@ -274,7 +275,7 @@ public class LanguageIdentifier {
       } catch (Exception e) {
         //fastText.destroy();
         fastText = null;
-        logger.error("Fasttext disabled", e);
+        LoggingTools.error(logger, e, "Fasttext disabled", "fasttext_error", "errorType", "unknownException");
       }
     }
     if (fastText == null && ngram == null) { // no else, value can change in if clause

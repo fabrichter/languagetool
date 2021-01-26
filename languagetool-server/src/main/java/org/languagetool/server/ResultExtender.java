@@ -24,6 +24,7 @@ import org.languagetool.AnalyzedSentence;
 import org.languagetool.AnalyzedTokenReadings;
 import org.languagetool.Tag;
 import org.languagetool.rules.*;
+import org.languagetool.tools.LoggingTools;
 import org.languagetool.tools.Tools;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -115,14 +116,18 @@ class ResultExtender {
       }
       InputStream input = huc.getInputStream();
       return parseJson(input);
-    } catch (SSLHandshakeException | SocketTimeoutException e) {
+    } catch (SSLHandshakeException e) {
       // "hard" errors that will probably not resolve themselves easily:
       logger.error("Error while querying hidden matches server", e);
+      throw e;
+    } catch (SocketTimeoutException e) { // timeouts
+      LoggingTools.warn(logger, e, "Query to hidden matches server timed out", "hidden_matches_timeout",
+        "service", "hidden_matches", "errorType", "remoteServiceTimeout");
       throw e;
     } catch (Exception e) {
       // These are issue that can be request-specific, like wrong parameters. We don't throw an
       // exception, as the calling code would otherwise assume this is a persistent error:
-      logger.warn("Warn: Failed to query hidden matches server at " + url + ": " + e.getClass() + ": " + e.getMessage() + ", input was " + plainText.length() + " characters - request-specific error, ignoring");
+      LoggingTools.warn(logger, e, "Failed to query hidden matches server,  input was " + plainText.length() + " characters - request-specific error, ignoring", "hidden_matches_error", "errorType", "remoteServiceError", "service", "hidden_matches");
       return Collections.emptyList();
     } finally {
       huc.disconnect();

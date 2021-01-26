@@ -25,10 +25,7 @@ import org.languagetool.JLanguageTool;
 
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -39,6 +36,36 @@ final class ServerTools {
   private final static Pattern sentContentPattern = Pattern.compile("<sentcontent>.*</sentcontent>", Pattern.DOTALL);
 
   private ServerTools() {
+  }
+
+  private static void putTextOrDataSizeField(Map<String, String> params, Map<String, Object> fields) {
+    if (params.get("text") != null) {
+      fields.put("textSize", params.get("text").length());
+    }
+    if (params.get("data") != null) {
+      fields.put("dataSize", params.get("data").length());
+    }
+  }
+
+  static void collectLoggingInfo(Map<String, Object> fields, Map<String, String> params, HttpExchange httpExchange) {
+    Map<String, String> loggedParams = new HashMap<>(params);
+    loggedParams.remove("password");
+    loggedParams.remove("text");
+    loggedParams.remove("data");
+    fields.put("userAgent", ServerTools.getHttpUserAgent(httpExchange));
+    fields.put("referrer", getHttpReferrer(httpExchange));
+    putTextOrDataSizeField(params, fields);
+    fields.put("parameters", loggedParams);
+  }
+
+
+  @NotNull
+  static Map<String, Object> collectLoggingInfo(String remoteAddress, int errorCode, HttpExchange httpExchange, Map<String, String> params, long runtimeMillis) {
+    Map<String, Object> fields = new HashMap<>();
+    collectLoggingInfo(fields, params, httpExchange);
+    fields.put("address", remoteAddress);
+    fields.put("time", runtimeMillis);
+    fields.put("responseCode", errorCode);
   }
 
   @NotNull

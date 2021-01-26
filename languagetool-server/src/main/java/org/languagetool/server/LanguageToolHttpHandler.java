@@ -22,9 +22,11 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.languagetool.ErrorRateTooHighException;
+import org.languagetool.tools.LoggingTools;
 import org.languagetool.tools.StringTools;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -283,6 +285,9 @@ class LanguageToolHttpHandler implements HttpHandler {
   }
 
   private void logError(String errorMessage, int code, Map<String, String> params, HttpExchange httpExchange, boolean logToDb) {
+    Map<String, Object> fields = new HashMap<>();
+    ServerTools.collectLoggingInfo(fields, params, httpExchange);
+    fields.put("responseCode", code);
     String message = errorMessage + ", sending code " + code + " - useragent: " + params.get("useragent") +
             " - HTTP UserAgent: " + ServerTools.getHttpUserAgent(httpExchange) + ", r:" + reqCounter.getRequestCount();
     if (params.get("username") != null) {
@@ -294,11 +299,11 @@ class LanguageToolHttpHandler implements HttpHandler {
     if (logToDb) {
       logToDatabase(params, message);
     }
-    // TODO: might need more than 512 chars, thus not logged to DB:
+    // might need more than 512 chars, thus not logged to DB:
     message += ", referrer: " + getHttpReferrer(httpExchange);
     message += ", language: " + params.get("language");
     message += ", " + getTextOrDataSizeMessage(params);
-    logger.error(message);
+    LoggingTools.log(logger, Level.ERROR, message, "server_error", fields);
   }
 
   private void logError(String remoteAddress, Exception e, int errorCode, HttpExchange httpExchange, Map<String, String> params, 
