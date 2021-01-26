@@ -66,6 +66,7 @@ final class ServerTools {
     fields.put("address", remoteAddress);
     fields.put("time", runtimeMillis);
     fields.put("responseCode", errorCode);
+    return fields;
   }
 
   @NotNull

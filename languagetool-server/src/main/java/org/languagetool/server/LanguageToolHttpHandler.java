@@ -22,14 +22,12 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.languagetool.ErrorRateTooHighException;
 import org.languagetool.tools.LoggingTools;
 import org.languagetool.tools.StringTools;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -83,160 +81,176 @@ class LanguageToolHttpHandler implements HttpHandler {
 
   @Override
   public void handle(HttpExchange httpExchange) throws IOException {
-    long startTime = System.currentTimeMillis();
-    String remoteAddress = null;
-    Map<String, String> parameters = new HashMap<>();
-    int reqId = reqCounter.incrementRequestCount();
-    ServerMetricsCollector.getInstance().logRequest();
-    boolean incrementHandleCount = false;
-    try {
-      URI requestedUri = httpExchange.getRequestURI();
-      String path = requestedUri.getRawPath();
-      if (config.getServerURL() != null) {
-        path = config.getServerURL().relativize(new URI(requestedUri.getPath())).getRawPath();
-        if (!path.startsWith("/")) {
-          path = "/" + path;
-        }
-      }
-      if (path.startsWith("/v2/stop") && config.isStoppable()) {
-        logger.warn("Stopping server by external command");
-        httpServer.stop();
-        return;
-      }
-      if (path.startsWith("/v2/")) {
-        // healthcheck should come before other limit checks (requests per time etc.), to be sure it works: 
-        String pathWithoutVersion = path.substring("/v2/".length());
-        if (pathWithoutVersion.equals("healthcheck")) {
-          if (workQueueFull(httpExchange, parameters, "Healthcheck failed: There are currently too many parallel requests.")) {
-            ServerMetricsCollector.getInstance().logFailedHealthcheck();
-            return;
-          } else {
-            String ok = "OK";
-            httpExchange.getResponseHeaders().set("Content-Type", "text/plain");
-            httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, ok.getBytes(ENCODING).length);
-            httpExchange.getResponseBody().write(ok.getBytes(ENCODING));
-            ServerMetricsCollector.getInstance().logResponse(HttpURLConnection.HTTP_OK);
-            return;
+    String requestId = httpExchange.getRequestHeaders().getFirst("X-Request-ID");
+    if (requestId == null) {
+      requestId = "-";
+    }
+    try (final CloseableThreadContext.Instance ctx = CloseableThreadContext.put("requestId", requestId)){
+      long startTime = System.currentTimeMillis();
+      String remoteAddress = null;
+      Map<String, String> parameters = new HashMap<>();
+      int reqId = reqCounter.incrementRequestCount();
+      ServerMetricsCollector.getInstance().logRequest();
+      boolean incrementHandleCount = false;
+      try {
+        URI requestedUri = httpExchange.getRequestURI();
+        String path = requestedUri.getRawPath();
+        if (config.getServerURL() != null) {
+          path = config.getServerURL().relativize(new URI(requestedUri.getPath())).getRawPath();
+          if (!path.startsWith("/")) {
+            path = "/" + path;
           }
         }
-      }
-      String referrer = httpExchange.getRequestHeaders().getFirst("Referer");
-      String origin = httpExchange.getRequestHeaders().getFirst("Origin");   // Referer can be turned off with meta tags, so also check this
-      for (String ref : config.getBlockedReferrers()) {
-        String errorMessage = null;
-        if (ref != null && !ref.isEmpty()) {
-          if (referrer != null && siteMatches(referrer, ref)) {
-            errorMessage = "Error: Access with referrer " + referrer + " denied.";
-          } else if (origin != null && siteMatches(origin, ref)) {
-            errorMessage = "Error: Access with origin " + origin + " denied.";
-          }
-        }
-        if (errorMessage != null) {
-          sendError(httpExchange, HttpURLConnection.HTTP_FORBIDDEN, errorMessage);
-          logError(errorMessage, HttpURLConnection.HTTP_FORBIDDEN, parameters, httpExchange);
-          ServerMetricsCollector.getInstance().logResponse(HttpURLConnection.HTTP_FORBIDDEN);
+        if (path.startsWith("/v2/stop") && config.isStoppable()) {
+          logger.warn("Stopping server by external command");
+          httpServer.stop();
           return;
         }
-      }
-      String origAddress = httpExchange.getRemoteAddress().getAddress().getHostAddress();
-      String realAddressOrNull = getRealRemoteAddressOrNull(httpExchange);
-      remoteAddress = realAddressOrNull != null ? realAddressOrNull : origAddress;
-      reqCounter.incrementHandleCount(remoteAddress, reqId);
-      incrementHandleCount = true;
-      // According to the Javadoc, "Closing an exchange without consuming all of the request body is
-      // not an error but may make the underlying TCP connection unusable for following exchanges.",
-      // so we consume the request now, even before checking for request limits:
-      parameters = getRequestQuery(httpExchange, requestedUri);
-      if (requestLimiter != null) {
-        try {
-          UserLimits userLimits = ServerTools.getUserLimits(parameters, config);
-          requestLimiter.checkAccess(remoteAddress, parameters, httpExchange.getRequestHeaders(), userLimits);
-        } catch (TooManyRequestsException e) {
-          String errorMessage = "Error: Access from " + remoteAddress + " denied: " + e.getMessage();
+        if (path.startsWith("/v2/")) {
+          // healthcheck should come before other limit checks (requests per time etc.), to be sure it works:
+          String pathWithoutVersion = path.substring("/v2/".length());
+          if (pathWithoutVersion.equals("healthcheck")) {
+            if (workQueueFull(httpExchange, parameters, "Healthcheck failed: There are currently too many parallel requests.")) {
+              ServerMetricsCollector.getInstance().logFailedHealthcheck();
+              return;
+            } else {
+              String ok = "OK";
+              httpExchange.getResponseHeaders().set("Content-Type", "text/plain");
+              httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, ok.getBytes(ENCODING).length);
+              httpExchange.getResponseBody().write(ok.getBytes(ENCODING));
+              ServerMetricsCollector.getInstance().logResponse(HttpURLConnection.HTTP_OK);
+              return;
+            }
+          }
+        }
+        String referrer = httpExchange.getRequestHeaders().getFirst("Referer");
+        String origin = httpExchange.getRequestHeaders().getFirst("Origin");   // Referer can be turned off with meta tags, so also check this
+        for (String ref : config.getBlockedReferrers()) {
+          String errorMessage = null;
+          if (ref != null && !ref.isEmpty()) {
+            if (referrer != null && siteMatches(referrer, ref)) {
+              errorMessage = "Error: Access with referrer " + referrer + " denied.";
+            } else if (origin != null && siteMatches(origin, ref)) {
+              errorMessage = "Error: Access with origin " + origin + " denied.";
+            }
+          }
+          if (errorMessage != null) {
+            sendError(httpExchange, HttpURLConnection.HTTP_FORBIDDEN, errorMessage);
+            logError(errorMessage, HttpURLConnection.HTTP_FORBIDDEN, parameters, httpExchange);
+            ServerMetricsCollector.getInstance().logResponse(HttpURLConnection.HTTP_FORBIDDEN);
+            return;
+          }
+        }
+        String origAddress = httpExchange.getRemoteAddress().getAddress().getHostAddress();
+        String realAddressOrNull = getRealRemoteAddressOrNull(httpExchange);
+        remoteAddress = realAddressOrNull != null ? realAddressOrNull : origAddress;
+        reqCounter.incrementHandleCount(remoteAddress, reqId);
+        incrementHandleCount = true;
+        // According to the Javadoc, "Closing an exchange without consuming all of the request body is
+        // not an error but may make the underlying TCP connection unusable for following exchanges.",
+        // so we consume the request now, even before checking for request limits:
+        parameters = getRequestQuery(httpExchange, requestedUri);
+        if (requestLimiter != null) {
+          try {
+            long limitStartTime = System.nanoTime();
+
+            UserLimits userLimits = ServerTools.getUserLimits(parameters, config);
+
+            float limitDelta = (System.nanoTime() - limitStartTime) / 1_000_000f;
+            LoggingTools.info(logger, "Checking authentication took " + limitDelta + "ms", "authentication_time", "time", limitDelta);
+            ThreadContext.put("uid", String.valueOf(userLimits.getPremiumUid()));
+
+            long accessStartTime = System.nanoTime();
+            requestLimiter.checkAccess(remoteAddress, parameters, httpExchange.getRequestHeaders(), userLimits);
+            float accessDelta = (System.nanoTime() - accessStartTime) / 1_000_000f;
+            LoggingTools.info(logger, "Checking request limits took " + accessDelta + "ms", "access_limits_time", "time", accessDelta);
+          } catch (TooManyRequestsException e) {
+            String errorMessage = "Error: Access from " + remoteAddress + " denied: " + e.getMessage();
+            int code = HttpURLConnection.HTTP_FORBIDDEN;
+            sendError(httpExchange, code, errorMessage);
+            // already logged via DatabaseAccessLimitLogEntry
+            logError(errorMessage, code, parameters, httpExchange, false);
+            return;
+          }
+        }
+        if (errorRequestLimiter != null && !errorRequestLimiter.wouldAccessBeOkay(remoteAddress, parameters, httpExchange.getRequestHeaders())) {
+          String textSizeMessage = getTextOrDataSizeMessage(parameters);
+          String errorMessage = "Error: Access from " + remoteAddress + " denied - too many recent timeouts. " +
+                  textSizeMessage +
+                  " Allowed maximum timeouts: " + errorRequestLimiter.getRequestLimit() +
+                  " per " + errorRequestLimiter.getRequestLimitPeriodInSeconds() + " seconds";
           int code = HttpURLConnection.HTTP_FORBIDDEN;
           sendError(httpExchange, code, errorMessage);
-          // already logged via DatabaseAccessLimitLogEntry
-          logError(errorMessage, code, parameters, httpExchange, false);
+          logError(errorMessage, code, parameters, httpExchange);
           return;
         }
-      }
-      if (errorRequestLimiter != null && !errorRequestLimiter.wouldAccessBeOkay(remoteAddress, parameters, httpExchange.getRequestHeaders())) {
-        String textSizeMessage = getTextOrDataSizeMessage(parameters);
-        String errorMessage = "Error: Access from " + remoteAddress + " denied - too many recent timeouts. " +
-                textSizeMessage +
-                " Allowed maximum timeouts: " + errorRequestLimiter.getRequestLimit() +
-                " per " + errorRequestLimiter.getRequestLimitPeriodInSeconds() + " seconds";
-        int code = HttpURLConnection.HTTP_FORBIDDEN;
-        sendError(httpExchange, code, errorMessage);
-        logError(errorMessage, code, parameters, httpExchange);
-        return;
-      }
-      if (workQueueFull(httpExchange, parameters, "Error: There are currently too many parallel requests. Please try again later.")) {
-        ServerMetricsCollector.getInstance().logRequestError(ServerMetricsCollector.RequestErrorType.QUEUE_FULL);
-        return;
-      }
-      if (allowedIps == null || allowedIps.contains(origAddress)) {
-        if (path.startsWith("/v2/")) {
-          ApiV2 apiV2 = new ApiV2(textCheckerV2, config.getAllowOriginUrl());
-          String pathWithoutVersion = path.substring("/v2/".length());
-          apiV2.handleRequest(pathWithoutVersion, httpExchange, parameters, errorRequestLimiter, remoteAddress, config);
-        } else if (path.endsWith("/Languages")) {
-          throw new IllegalArgumentException("You're using an old version of our API that's not supported anymore. Please see https://languagetool.org/http-api/migration.php");
-        } else if (path.equals("/")) {
-          throw new IllegalArgumentException("Missing arguments for LanguageTool API. Please see " + API_DOC_URL);
-        } else if (path.contains("/v2/")) {
-          throw new IllegalArgumentException("You have '/v2/' in your path, but not at the root. Try an URL like 'http://server/v2/...' ");
-        } else if (path.equals("/favicon.ico")) {
-          sendError(httpExchange, HttpURLConnection.HTTP_NOT_FOUND, "Not found");
-        } else {
-          throw new IllegalArgumentException("This is the LanguageTool API. You have not specified any parameters. Please see " + API_DOC_URL);
+        if (workQueueFull(httpExchange, parameters, "Error: There are currently too many parallel requests. Please try again later.")) {
+          ServerMetricsCollector.getInstance().logRequestError(ServerMetricsCollector.RequestErrorType.QUEUE_FULL);
+          return;
         }
-      } else {
-        String errorMessage = "Error: Access from " + StringTools.escapeXML(origAddress) + " denied";
-        sendError(httpExchange, HttpURLConnection.HTTP_FORBIDDEN, errorMessage);
-        throw new RuntimeException(errorMessage);
-      }
-    } catch (Exception e) {
-      String response;
-      int errorCode;
-      boolean textLoggingAllowed = false;
-      boolean logStacktrace = true;
-      Throwable rootCause = ExceptionUtils.getRootCause(e);
-      if (e instanceof TextTooLongException || rootCause instanceof TextTooLongException) {
-        errorCode = HttpURLConnection.HTTP_ENTITY_TOO_LARGE;
-        response = e.getMessage();
-        logStacktrace = false;
-      } else if (e instanceof ErrorRateTooHighException || rootCause instanceof ErrorRateTooHighException) {
-        errorCode = HttpURLConnection.HTTP_BAD_REQUEST;
-        response = ExceptionUtils.getRootCause(e).getMessage();
-        logStacktrace = false;
-      } else if (hasCause(e, AuthException.class)) {
-        errorCode = HttpURLConnection.HTTP_FORBIDDEN;
-        response = AuthException.class.getName() + ": " + e.getMessage();
-        logStacktrace = false;
-      } else if (e instanceof IllegalArgumentException || rootCause instanceof IllegalArgumentException) {
-        errorCode = HttpURLConnection.HTTP_BAD_REQUEST;
-        response = e.getMessage();
-      } else if (e instanceof PathNotFoundException || rootCause instanceof PathNotFoundException) {
-        errorCode = HttpURLConnection.HTTP_NOT_FOUND;
-        response = e.getMessage();
-      } else if (e instanceof TimeoutException || rootCause instanceof TimeoutException) {
-        errorCode = HttpURLConnection.HTTP_INTERNAL_ERROR;
-        response = "Checking took longer than " + config.getMaxCheckTimeMillis()/1000.0f + " seconds, which is this server's limit. " +
-                   "Please make sure you have selected the proper language or consider submitting a shorter text.";
-      } else {
-        response = "Internal Error: " + e.getMessage();
-        errorCode = HttpURLConnection.HTTP_INTERNAL_ERROR;
-        textLoggingAllowed = true;
-      }
-      long endTime = System.currentTimeMillis();
-      logError(remoteAddress, e, errorCode, httpExchange, parameters, textLoggingAllowed, logStacktrace, endTime-startTime);
-      sendError(httpExchange, errorCode, "Error: " + response);
+        if (allowedIps == null || allowedIps.contains(origAddress)) {
+          if (path.startsWith("/v2/")) {
+            ApiV2 apiV2 = new ApiV2(textCheckerV2, config.getAllowOriginUrl());
+            String pathWithoutVersion = path.substring("/v2/".length());
+            apiV2.handleRequest(pathWithoutVersion, httpExchange, parameters, errorRequestLimiter, remoteAddress, config);
+          } else if (path.endsWith("/Languages")) {
+            throw new IllegalArgumentException("You're using an old version of our API that's not supported anymore. Please see https://languagetool.org/http-api/migration.php");
+          } else if (path.equals("/")) {
+            throw new IllegalArgumentException("Missing arguments for LanguageTool API. Please see " + API_DOC_URL);
+          } else if (path.contains("/v2/")) {
+            throw new IllegalArgumentException("You have '/v2/' in your path, but not at the root. Try an URL like 'http://server/v2/...' ");
+          } else if (path.equals("/favicon.ico")) {
+            sendError(httpExchange, HttpURLConnection.HTTP_NOT_FOUND, "Not found");
+          } else {
+            throw new IllegalArgumentException("This is the LanguageTool API. You have not specified any parameters. Please see " + API_DOC_URL);
+          }
+        } else {
+          String errorMessage = "Error: Access from " + StringTools.escapeXML(origAddress) + " denied";
+          sendError(httpExchange, HttpURLConnection.HTTP_FORBIDDEN, errorMessage);
+          throw new RuntimeException(errorMessage);
+        }
+      } catch (Exception e) {
+        String response;
+        int errorCode;
+        boolean textLoggingAllowed = false;
+        boolean logStacktrace = true;
+        Throwable rootCause = ExceptionUtils.getRootCause(e);
+        if (e instanceof TextTooLongException || rootCause instanceof TextTooLongException) {
+          errorCode = HttpURLConnection.HTTP_ENTITY_TOO_LARGE;
+          response = e.getMessage();
+          logStacktrace = false;
+        } else if (e instanceof ErrorRateTooHighException || rootCause instanceof ErrorRateTooHighException) {
+          errorCode = HttpURLConnection.HTTP_BAD_REQUEST;
+          response = ExceptionUtils.getRootCause(e).getMessage();
+          logStacktrace = false;
+        } else if (hasCause(e, AuthException.class)) {
+          errorCode = HttpURLConnection.HTTP_FORBIDDEN;
+          response = AuthException.class.getName() + ": " + e.getMessage();
+          logStacktrace = false;
+        } else if (e instanceof IllegalArgumentException || rootCause instanceof IllegalArgumentException) {
+          errorCode = HttpURLConnection.HTTP_BAD_REQUEST;
+          response = e.getMessage();
+        } else if (e instanceof PathNotFoundException || rootCause instanceof PathNotFoundException) {
+          errorCode = HttpURLConnection.HTTP_NOT_FOUND;
+          response = e.getMessage();
+        } else if (e instanceof TimeoutException || rootCause instanceof TimeoutException) {
+          errorCode = HttpURLConnection.HTTP_INTERNAL_ERROR;
+          response = "Checking took longer than " + config.getMaxCheckTimeMillis()/1000.0f + " seconds, which is this server's limit. " +
+                    "Please make sure you have selected the proper language or consider submitting a shorter text.";
+        } else {
+          response = "Internal Error: " + e.getMessage();
+          errorCode = HttpURLConnection.HTTP_INTERNAL_ERROR;
+          textLoggingAllowed = true;
+        }
+        long endTime = System.currentTimeMillis();
+        logError(remoteAddress, e, errorCode, httpExchange, parameters, textLoggingAllowed, logStacktrace, endTime-startTime);
+        sendError(httpExchange, errorCode, "Error: " + response);
 
-    } finally {
-      httpExchange.close();
-      if (incrementHandleCount) {
-        reqCounter.decrementHandleCount(reqId);
+      } finally {
+        httpExchange.close();
+        if (incrementHandleCount) {
+          reqCounter.decrementHandleCount(reqId);
+        }
       }
     }
   }
