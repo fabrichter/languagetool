@@ -51,7 +51,7 @@ public final class Languages {
   private Languages() {
   }
 
-  static void useLanguagesFromPackages() {
+  public static void useLanguagesFromPackages() {
     Set<Language> currentLanguages = new HashSet<>(Languages.get());
     List<Language> newLanguages = loadLanguagesFromPackages();
     List<Language> addedLanguages = new ArrayList<>();

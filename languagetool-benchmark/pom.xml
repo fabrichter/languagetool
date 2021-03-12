@@ -4,7 +4,7 @@
     <parent>
     <artifactId>languagetool-parent</artifactId>
     <groupId>org.languagetool</groupId>
-    <version>5.2-SNAPSHOT</version>
+    <version>5.3-SNAPSHOT</version>
   </parent>
 
     <groupId>org.languagetool</groupId>
@@ -49,7 +49,7 @@
         <dependency>
             <groupId>org.languagetool</groupId>
             <artifactId>languagetool-wikipedia</artifactId>
-            <version>5.2-SNAPSHOT</version>
+            <version>${languagetool.version}</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
