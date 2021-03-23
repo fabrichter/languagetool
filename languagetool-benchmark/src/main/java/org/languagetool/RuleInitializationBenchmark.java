@@ -127,7 +127,7 @@ public class RuleInitializationBenchmark {
   @Benchmark
   public void testRule(Blackhole bh) throws Exception {
     if (ruleConstructor == null) {
-      // throw new NoSuchMethodException("Couldn't find any constructor to call");
+      throw new NoSuchMethodException("Couldn't find any constructor to call");
     } else {
       bh.consume(ruleConstructor.newInstance(constructorArgs));
     }
