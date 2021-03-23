@@ -21,6 +21,7 @@
 
 package org.languagetool;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.nio.file.Paths;
@@ -31,6 +32,7 @@ import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 
 import org.jetbrains.annotations.Nullable;
+import org.languagetool.languagemodel.LanguageModel;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -95,6 +97,9 @@ public class RuleInitializationBenchmark {
 
   private Language language;
   private ResourceBundle messageBundle;
+  private UserConfig user;
+  private LanguageModel languageModel;
+
   private Constructor<?> ruleConstructor;
   private Object[] constructorArgs;
 
@@ -102,17 +107,32 @@ public class RuleInitializationBenchmark {
   public void getRuleConstructor() throws IOException, ClassNotFoundException  {
     language = Languages.getLanguageForShortCode(languageCode);
     messageBundle = JLanguageTool.getMessageBundle(language);
+    user = new UserConfig();
+    if (Settings.ngramDirectory() != null) {
+      languageModel = language.getLanguageModel(new File(Settings.ngramDirectory()));
+    }
     // try some common signatures to get a constructor we can use for the class
     final Class<?>[][] signatures = {
       { },
       { Language.class },
-      { ResourceBundle.class, Language.class }
+      { ResourceBundle.class },
+      { ResourceBundle.class, Language.class },
+      { ResourceBundle.class, Language.class, UserConfig.class },
+      { ResourceBundle.class, LanguageModel.class, Language.class },
+      { ResourceBundle.class, LanguageModel.class, UserConfig.class },
+      { ResourceBundle.class, LanguageModel.class, Language.class, UserConfig.class }
     };
     final Object[][] arguments = {
       {},
       { language },
-      { messageBundle, language }
+      { messageBundle },
+      { messageBundle, language },
+      { messageBundle, language, user },
+      { messageBundle, languageModel, language },
+      { messageBundle, languageModel, user },
+      { messageBundle, languageModel, language, user }
     };
+    assert(signatures.length == arguments.length);
     Class<?> rule = Class.forName(ruleClass);
     for (int i = 0; i < signatures.length; i++) {
       try {
@@ -139,6 +159,11 @@ public class RuleInitializationBenchmark {
     for (String langCode : languages) {
       Language lang = Languages.getLanguageForShortCode(langCode);
       JLanguageTool lt = new JLanguageTool(lang);
+
+      if (Settings.ngramDirectory() != null) {
+        lt.activateLanguageModelRules(new File(Settings.ngramDirectory()));
+      }
+
       String[] ruleClasses = lt.getAllActiveRules().stream()
         .map(r -> r.getClass().getName())
         .distinct()
