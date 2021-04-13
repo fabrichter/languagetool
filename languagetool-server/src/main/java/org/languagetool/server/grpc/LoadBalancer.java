@@ -115,14 +115,18 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
             long remainingTime = timeout - elapsedTime;
 
             QueuedRequest req = requests.poll(remainingTime, TimeUnit.NANOSECONDS);
-            long elapsed = System.nanoTime() - time;
-            //logger.info("Waited {}ms on poll({})",
-            //  TimeUnit.MILLISECONDS.convert(elapsed, TimeUnit.NANOSECONDS),
-            //  TimeUnit.MILLISECONDS.convert(remainingTime, TimeUnit.NANOSECONDS));
             if (req != null) {
-              start = Math.min(req.timestamp, start); // TODO: is this necessary
-              batchSize += req.request.getSentencesCount();
-              batch.add(req);
+              if (req.request.getSentencesCount() >= config.getBatchSize()) {
+                // send requests that are long enough without further batching
+                boolean added = batches.offer(Collections.singletonList(req));
+                if (!added) {
+                  logger.error("Request batch queue full, discarding requests.");
+                }
+              } else {
+                start = Math.min(req.timestamp, start); // TODO: is this necessary
+                batchSize += req.request.getSentencesCount();
+                batch.add(req);
+              }
             }
           } while (System.nanoTime() - start < timeout && batchSize < config.getBatchSize());
         } catch (InterruptedException e) {
