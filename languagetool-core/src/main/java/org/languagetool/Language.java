@@ -27,6 +27,8 @@ import org.languagetool.languagemodel.LanguageModel;
 import org.languagetool.languagemodel.LuceneLanguageModel;
 import org.languagetool.rules.RemoteRuleConfig;
 import org.languagetool.rules.Rule;
+import org.languagetool.rules.RemoteRule;
+import org.languagetool.rules.SleepRemoteRule;
 import org.languagetool.rules.neuralnetwork.Word2VecModel;
 import org.languagetool.rules.patterns.*;
 import org.languagetool.synthesis.Synthesizer;
@@ -198,6 +200,7 @@ public abstract class Language {
     return Collections.emptyList();
   }
 
+  private static List<Rule> baseRemoteRules;
 
   /**
    * For rules that depend on a remote server; based on {@link org.languagetool.rules.RemoteRule}
@@ -207,7 +210,25 @@ public abstract class Language {
   public List<Rule> getRelevantRemoteRules(ResourceBundle messageBundle, List<RemoteRuleConfig> configs,
                                            GlobalConfig globalConfig, UserConfig userConfig, Language motherTongue, List<Language> altLanguages, boolean inputLogging)
     throws IOException {
-    return Collections.emptyList();
+    if (baseRemoteRules == null) {
+      synchronized (this) {
+        if (baseRemoteRules == null) {
+          // for load / performance tests
+          if (Boolean.parseBoolean(System.getProperty("sleepRemoteRule", "false"))) {
+            RemoteRuleConfig config = RemoteRuleConfig.getRelevantConfig(SleepRemoteRule.RULE_ID, configs);
+            if (config != null) {
+              RemoteRule rule = new SleepRemoteRule(this, config);
+              baseRemoteRules = Collections.singletonList(rule);
+            } else {
+              baseRemoteRules = Collections.emptyList();
+            }
+          } else {
+              baseRemoteRules = Collections.emptyList();
+          }
+        }
+      }
+    }
+    return baseRemoteRules;
   }
 
   /**

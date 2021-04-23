@@ -153,7 +153,7 @@ public class RuleInitializationBenchmark {
     }
   }
 
-  public static void main(String[] args) throws RunnerException {
+  public static void main(String[] args) throws IOException, RunnerException {
     List<String> languages = Settings.languages();
 
     for (String langCode : languages) {
