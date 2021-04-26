@@ -50,6 +50,8 @@ class LoadBalancerConfiguration {
   private final Path backendServersFile;
   private final int threads;
   @Nullable
+  private final Integer monitoringPort;
+  @Nullable
   private final String clientKey;
   @Nullable
   private final String clientCertificate;
@@ -86,6 +88,12 @@ class LoadBalancerConfiguration {
 
     host = Objects.requireNonNull(props.getProperty("host"),
       "Missing configuration setting: host");
+
+    if (props.containsKey("monitoringPort")) {
+      monitoringPort = Integer.parseInt(props.getProperty("monitoringPort"));
+    } else {
+      monitoringPort = null;
+    }
 
     clientKey = props.getProperty("clientKey");
     clientCertificate = props.getProperty("clientCertificate");
@@ -169,6 +177,11 @@ class LoadBalancerConfiguration {
 
   public int getThreads() {
     return threads;
+  }
+
+  @Nullable
+  public Integer getMonitoringPort() {
+    return monitoringPort;
   }
 
   public String getClientKey() {

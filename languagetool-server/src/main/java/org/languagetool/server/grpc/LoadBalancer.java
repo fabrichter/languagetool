@@ -119,6 +119,7 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
               if (req.request.getSentencesCount() >= config.getBatchSize()) {
                 // send requests that are long enough without further batching
                 boolean added = batches.offer(Collections.singletonList(req));
+                LoadBalancerMetrics.getInstance().queueSize.labels(config.getName()).dec();
                 if (!added) {
                   logger.error("Request batch queue full, discarding requests.");
                 }
@@ -135,6 +136,12 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
 
         if (!batch.isEmpty()) {
           boolean added = batches.offer(batch);
+          LoadBalancerMetrics.getInstance().queueSize.labels(config.getName()).dec(batch.size());
+          long time = System.nanoTime();
+          for (QueuedRequest req : batch) {
+            LoadBalancerMetrics.getInstance().queueTime.labels(config.getName())
+              .observe(TimeUnit.NANOSECONDS.toSeconds(time - req.timestamp));
+          }
           if (!added) {
             logger.error("Request batch queue full, discarding requests.");
           }
@@ -177,17 +184,27 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
               StatusException e = new StatusException(Status.UNAVAILABLE.withDescription("No backend servers available"));
               logger.error("Requests aborted - no backend servers up out of {} - {}", backends.size(), backends);
               batch.forEach(queuedRequest -> queuedRequest.response.onError(e));
+              LoadBalancerMetrics.getInstance().errors.labels(config.getName(), Status.UNAVAILABLE.toString()).inc();
               continue;
             }
           }
+          long start = System.nanoTime();
           future = selected.stub.match(batchedRequest.build());
+          LoadBalancerMetrics.getInstance().sessions.labels(config.getName(), selected.source.getAddress()).inc();
+          LoadBalancerMetrics.getInstance().requests.labels(config.getName(), selected.source.getAddress()).inc();
           // TODO: timeout, cancel/retry frontend requests
           // TODO: deadline -> timeout based on request size, as in clients
           future.addListener(() -> {
+            LoadBalancerMetrics.getInstance().sessions.labels(config.getName(), selected.source.getAddress()).dec();
             try {
               MLServerProto.MatchResponse batchResponse = future.get();
-              logger.info("[{}] Request[{}/{}] -> Backend[{}] -> Response[{}]", config.getName(),
-                batch.size(), batchedRequest.getSentencesCount(), selected.source, batchResponse.getSentenceMatchesCount());
+              long end = System.nanoTime();
+              double duration = (end - start) / 1e9;
+              logger.info("[{}] Request[batch={}/sentences={}] -> Backend[server={}] -> Response[matches={},duration={}s]", config.getName(),
+                batch.size(), batchedRequest.getSentencesCount(), selected.source, batchResponse.getSentenceMatchesCount(), duration);
+
+              LoadBalancerMetrics.getInstance().responseTime.labels(config.getName())
+                .observe(duration);
               int sentenceOffset = 0;
 
               for (int batchIndex = 0; batchIndex < batch.size(); batchIndex++) {
@@ -200,14 +217,18 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
                 sentenceOffset += sentenceSize;
                 req.response.onNext(response.build());
                 req.response.onCompleted();
+              LoadBalancerMetrics.getInstance().totalTime.labels(config.getName())
+                .observe((end - req.timestamp) / 1e9);
               }
             } catch (InterruptedException | ExecutionException e) {
               logger.error("Reading backend response failed.", e);
+              LoadBalancerMetrics.getInstance().errors.labels(config.getName(), e.getClass().getName()).inc();
               batch.forEach(queued -> queued.response.onError(e));
             }
           }, proxyPool);
         } catch (InterruptedException e) {
           logger.error("Interrupted while retrieving request batch", e);
+          LoadBalancerMetrics.getInstance().errors.labels(config.getName(), e.getClass().getName()).inc();
         }
       }
     }
@@ -276,17 +297,20 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
                 if (backend.up || initialHealthcheck) {
                   logger.warn("[{}] Health check for {} failed with status {}", config.getName(), backend.source, response.getStatus());
                   backend.up = false;
+                  LoadBalancerMetrics.getInstance().serverStatus.labels(config.getName(), backend.source.getAddress()).set(0.0);
                 }
               } else {
                 if (!backend.up) {
                   logger.info("[{}] Health check for {} succeeded, now marked as up", config.getName(), backend.source);
                 }
                 backend.up = true;
+                LoadBalancerMetrics.getInstance().serverStatus.labels(config.getName(), backend.source.getAddress()).set(1.0);
               }
             } catch (InterruptedException | ExecutionException e) {
               if (backend.up || initialHealthcheck) {
                 logger.warn("[{}] Health check for {} failed with exception", config.getName(), backend.source, e);
                 backend.up = false;
+                LoadBalancerMetrics.getInstance().serverStatus.labels(config.getName(), backend.source.getAddress()).set(0.0);
               }
             }
           }, healthCheckExecutor);
@@ -365,13 +389,25 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
   public static void main(String[] args) throws IOException, InterruptedException {
     // TODO: alternative: run one LB, collect results from multiple backends
     List<LoadBalancer> loadBalancers = new ArrayList<>(args.length);
+    Integer monitoringPort = null;
     for (String configPath : args) {
       logger.info("Loading configuration {}...", configPath);
       LoadBalancer lb = new LoadBalancer(new File(configPath));
+      if (monitoringPort != null && !monitoringPort.equals(lb.config.getMonitoringPort())) {
+        logger.error("[{}] Conflicting configurations for 'monitoringPort' found. Ignoring monitoringPort={}",
+                     lb.config.getName(), lb.config.getMonitoringPort());
+      }
+      if (monitoringPort == null) {
+        monitoringPort = lb.config.getMonitoringPort();
+      }
       logger.info("[{}] Starting load balancer...", lb.config.getName());
       lb.start();
       logger.info("[{}] Started.", lb.config.getName());
       loadBalancers.add(lb);
+    }
+    if (monitoringPort != null) {
+      logger.info("Starting Prometheus server on port {}", monitoringPort);
+      LoadBalancerMetrics.init(monitoringPort);
     }
     for (LoadBalancer lb : loadBalancers) {
       lb.blockUntilShutdown();
@@ -429,6 +465,8 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
   @Override
   public void match(MLServerProto.MatchRequest request, StreamObserver<MLServerProto.MatchResponse> responseObserver) {
     requests.add(new QueuedRequest(request, responseObserver));
+    LoadBalancerMetrics.getInstance().queueSize.labels(config.getName()).inc();
+    LoadBalancerMetrics.getInstance().batchSize.labels(config.getName()).observe(request.getSentencesCount());
   }
 
   @Nullable
