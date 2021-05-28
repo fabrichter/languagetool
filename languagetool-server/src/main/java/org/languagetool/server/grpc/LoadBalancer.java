@@ -42,15 +42,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("ALL")
 public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
   private static final Logger logger = LoggerFactory.getLogger(LoadBalancer.class);
   private static final long CONNECTION_CLOSE_DELAY_MS = 30_000;
+  private static final int PRIORITY_QUEUE_CAPACITY = 10_000;
 
   private final LoadBalancerConfiguration config;
 
   private final List<BackendServer> backends = new LinkedList<>();
+  private final PriorityBlockingQueue<BackendServer> leastConnQueue = new PriorityBlockingQueue<>(PRIORITY_QUEUE_CAPACITY);
   private final Random rand = new Random();// WIP -> implement round robin?
   // TODO: capacity for queues?
   private final BlockingQueue<QueuedRequest> requests = new LinkedBlockingQueue<>();
@@ -72,13 +75,15 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
     }
   }
 
-  class BackendServer {
+  class BackendServer implements Comparable<BackendServer> {
     private final LoadBalancerConfiguration.LBEntry source;
     private final ManagedChannel channel;
     private final MLServerGrpc.MLServerFutureStub stub;
     private final HealthGrpc.HealthFutureStub healthStub;
     private boolean up = false;
     private long lastHealthcheck = 0;
+    // number of currently running requests
+    private final AtomicInteger sessions = new AtomicInteger();
 
     BackendServer(LoadBalancerConfiguration.LBEntry backend) throws SSLException {
       this.source = backend;
@@ -96,6 +101,21 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
       }
       this.stub = MLServerGrpc.newFutureStub(channel);
       this.healthStub = HealthGrpc.newFutureStub(channel);
+    }
+
+    public int updateSessionCount(int delta) {
+      return sessions.addAndGet(delta);
+    }
+    public void resetSessionCount() {
+      sessions.set(0);
+    }
+
+    @Override
+    public int compareTo(BackendServer other) {
+      // healthy servers before down servers, then servers with least connections first
+      int health = Boolean.compare(up, other.up);
+      if (health != 0) return -health;
+      return Integer.compare(sessions.get(), other.sessions.get());
     }
   }
 
@@ -120,6 +140,7 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
                 // send requests that are long enough without further batching
                 boolean added = batches.offer(Collections.singletonList(req));
                 LoadBalancerMetrics.getInstance().queueSize.labels(config.getName()).dec();
+                LoadBalancerMetrics.getInstance().backendQueueSize.labels(config.getName()).inc();
                 if (!added) {
                   logger.error("Request batch queue full, discarding requests.");
                 }
@@ -136,6 +157,7 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
 
         if (!batch.isEmpty()) {
           boolean added = batches.offer(batch);
+          LoadBalancerMetrics.getInstance().backendQueueSize.labels(config.getName()).inc();
           LoadBalancerMetrics.getInstance().queueSize.labels(config.getName()).dec(batch.size());
           long time = System.nanoTime();
           for (QueuedRequest req : batch) {
@@ -157,6 +179,7 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
       while (true) {
         try {
           final List<QueuedRequest> batch = batches.take();
+          LoadBalancerMetrics.getInstance().backendQueueSize.labels(config.getName()).dec();
           boolean logging = true;
           List<Integer> requestSizes = new ArrayList<>(batch.size());
           MLServerProto.MatchRequest.Builder batchedRequest = MLServerProto.MatchRequest.newBuilder();
@@ -179,7 +202,7 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
           final ListenableFuture<MLServerProto.MatchResponse> future;
           BackendServer selected;
           synchronized (backends) {
-            selected = selectBackendServer();
+            selected = selectBackendServer(batchedRequest.getSentencesCount());
             if (selected == null) {
               StatusException e = new StatusException(Status.UNAVAILABLE.withDescription("No backend servers available"));
               logger.error("Requests aborted - no backend servers up out of {} - {}", backends.size(), backends);
@@ -188,6 +211,8 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
               continue;
             }
           }
+          logger.info("[{}] Request[batch={}/sentences={}] -> Backend[server={},sessions={}]", config.getName(),
+            batch.size(), batchedRequest.getSentencesCount(), selected.source, selected.sessions.get());
           long start = System.nanoTime();
           future = selected.stub.match(batchedRequest.build());
           LoadBalancerMetrics.getInstance().sessions.labels(config.getName(), selected.source.getAddress()).inc();
@@ -196,6 +221,7 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
           // TODO: deadline -> timeout based on request size, as in clients
           future.addListener(() -> {
             LoadBalancerMetrics.getInstance().sessions.labels(config.getName(), selected.source.getAddress()).dec();
+            selected.updateSessionCount(-batchedRequest.getSentencesCount());
             try {
               MLServerProto.MatchResponse batchResponse = future.get();
               long end = System.nanoTime();
@@ -302,6 +328,9 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
               } else {
                 if (!backend.up) {
                   logger.info("[{}] Health check for {} succeeded, now marked as up", config.getName(), backend.source);
+                  // add servers back to queue with reset connection count
+                  backend.resetSessionCount();
+                  leastConnQueue.offer(backend);
                 }
                 backend.up = true;
                 LoadBalancerMetrics.getInstance().serverStatus.labels(config.getName(), backend.source.getAddress()).set(1.0);
@@ -470,7 +499,30 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
   }
 
   @Nullable
-  protected BackendServer selectBackendServer() {
+  protected BackendServer selectBackendServer(int sentences) {
+    // use leastconn balancing
+
+    // initalize queue
+    if (leastConnQueue.isEmpty()) {
+      synchronized(backends) {
+        for (BackendServer server : backends) {
+          leastConnQueue.offer(server);
+        }
+      }
+    }
+    BackendServer selected;
+    // unhealthy servers get flushed out here, re-added after successful healthcheck
+    while ((selected = leastConnQueue.poll()) != null && !selected.up){
+    }
+
+    if (selected != null) {
+      selected.updateSessionCount(sentences);
+      // add server back to queue at correct position
+      leastConnQueue.offer(selected);
+    }
+    return selected;
+
+    /* random choice
     BackendServer selected = null;
     // TODO round robin instead of random; or maybe configurable
 
@@ -484,5 +536,6 @@ public class LoadBalancer extends MLServerGrpc.MLServerImplBase {
       }
     }
     return selected;
+    */
   }
 }

@@ -27,8 +27,6 @@ import io.prometheus.client.hotspot.DefaultExports;
 
 import java.io.IOException;
 
-import javax.management.monitor.GaugeMonitor;
-
 public class LoadBalancerMetrics {
   private static HTTPServer server;
   private static LoadBalancerMetrics instance;
@@ -44,7 +42,11 @@ public class LoadBalancerMetrics {
   };
 
   public final Gauge queueSize = Gauge
-    .build("languagetool_grpc_lb_queue_size", "Number of requests currently in queue")
+    .build("languagetool_grpc_lb_queue_size", "Number of requests currently in queue waiting to be batched")
+    .labelNames("backend").register();
+
+  public final Gauge backendQueueSize = Gauge
+    .build("languagetool_grpc_lb_backend_queue_size", "Number of batched requests ready to be sent to backends")
     .labelNames("backend").register();
 
   public final Gauge sessions = Gauge
@@ -98,7 +100,11 @@ public class LoadBalancerMetrics {
 
   public static LoadBalancerMetrics getInstance() {
     if (instance == null) {
-      instance = new LoadBalancerMetrics();
+      synchronized(TIME_BUCKETS) {
+        if (instance == null) {
+          instance = new LoadBalancerMetrics();
+        }
+      }
     }
     return instance;
   }
